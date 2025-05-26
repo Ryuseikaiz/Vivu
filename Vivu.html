@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vi Vu - Trang chủ</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .hero-bg {
+            /* Updated background image */
+            background-image: url('https://images.unsplash.com/photo-1501785888041-af3ef285b470?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1920&q=80'); /* Example: Pragser Wildsee, Italy */
+            background-size: cover;
+            background-position: center;
+        }
+        .search-bar-container {
+            backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+        .card-hover:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-gray-100">
+
+    <header class="bg-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <a href="#" class="text-3xl font-bold text-sky-600">Vi Vu</a>
+            <nav class="hidden md:flex space-x-6 items-center">
+                <a href="#" class="text-gray-700 hover:text-sky-600 transition duration-300">Trang chủ</a>
+                <a href="#destinations" class="text-gray-700 hover:text-sky-600 transition duration-300">Điểm đến</a>
+                <a href="#travel-styles" class="text-gray-700 hover:text-sky-600 transition duration-300">Loại hình</a>
+                <a href="#blog" class="text-gray-700 hover:text-sky-600 transition duration-300">Blog</a>
+                <a href="#" class="text-gray-700 hover:text-sky-600 transition duration-300">Liên hệ</a>
+            </nav>
+            <div class="hidden md:flex items-center space-x-3">
+                <a href="#" class="px-4 py-2 text-sm font-medium text-sky-600 border border-sky-600 rounded-lg hover:bg-sky-600 hover:text-white transition duration-300">Đăng nhập</a>
+                <a href="#" class="px-4 py-2 text-sm font-medium text-white bg-sky-600 rounded-lg hover:bg-sky-700 transition duration-300">Đăng ký</a>
+            </div>
+            <div class="md:hidden">
+                <button id="mobile-menu-button" class="text-gray-700 focus:outline-none">
+                    <i class="fas fa-bars fa-lg"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="md:hidden hidden bg-white shadow-lg py-2">
+            <a href="#" class="block px-6 py-2 text-gray-700 hover:bg-sky-100">Trang chủ</a>
+            <a href="#destinations" class="block px-6 py-2 text-gray-700 hover:bg-sky-100">Điểm đến</a>
+            <a href="#travel-styles" class="block px-6 py-2 text-gray-700 hover:bg-sky-100">Loại hình</a>
+            <a href="#blog" class="block px-6 py-2 text-gray-700 hover:bg-sky-100">Blog</a>
+            <a href="#" class="block px-6 py-2 text-gray-700 hover:bg-sky-100">Liên hệ</a>
+            <div class="px-6 py-2 mt-2 border-t border-gray-200">
+                <a href="#" class="block w-full text-center px-4 py-2 text-sm font-medium text-sky-600 border border-sky-600 rounded-lg hover:bg-sky-600 hover:text-white transition duration-300 mb-2">Đăng nhập</a>
+                <a href="#" class="block w-full text-center px-4 py-2 text-sm font-medium text-white bg-sky-600 rounded-lg hover:bg-sky-700 transition duration-300">Đăng ký</a>
+            </div>
+        </div>
+    </header>
+
+    <section class="hero-bg h-[calc(100vh-68px)] flex items-center justify-center text-white relative">
+        <div class="absolute inset-0 bg-black opacity-40"></div> <div class="text-center z-10 p-6">
+            <h1 class="text-4xl md:text-6xl font-bold mb-6 leading-tight">Vi Vu - Chạm Đến Mọi Nẻo Đường</h1>
+            <p class="text-lg md:text-xl mb-10 max-w-2xl mx-auto">Khám phá vẻ đẹp Việt Nam và thế giới. Lên kế hoạch cho chuyến đi hoàn hảo của bạn ngay hôm nay!</p>
+            
+            <div class="search-bar-container p-6 md:p-8 rounded-xl shadow-2xl max-w-3xl mx-auto">
+                <form class="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+                    <div>
+                        <label for="destination" class="block text-sm font-medium text-gray-200 mb-1">Bạn muốn đi đâu?</label>
+                        <input type="text" id="destination" name="destination" placeholder="Ví dụ: Đà Lạt, Phú Quốc..." class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-80 text-gray-800 placeholder-gray-500 focus:ring-2 focus:ring-sky-400 focus:outline-none transition duration-300">
+                    </div>
+                    <div>
+                        <label for="dates" class="block text-sm font-medium text-gray-200 mb-1">Ngày đi</label>
+                        <input type="date" id="dates" name="dates" class="w-full px-4 py-3 rounded-lg bg-white bg-opacity-80 text-gray-800 focus:ring-2 focus:ring-sky-400 focus:outline-none transition duration-300">
+                    </div>
+                    <button type="submit" class="w-full bg-sky-500 hover:bg-sky-600 text-white font-semibold py-3 px-6 rounded-lg transition duration-300 text-lg md:col-span-1 mt-4 md:mt-0">
+                        <i class="fas fa-search mr-2"></i>Tìm kiếm
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <section id="destinations" class="py-16 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Điểm Đến Nổi Bật</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover transition duration-300">
+                    <img src="https://cdn.xanhsm.com/2025/02/c0c9124a-vinh-ha-long-1.jpg" alt="Vịnh Hạ Long" class="w-full h-56 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/81c784/ffffff?text=Lỗi+tải+ảnh';">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Vịnh Hạ Long</h3>
+                        <p class="text-gray-600 text-sm mb-4">Khám phá kỳ quan thiên nhiên thế giới với hàng ngàn đảo đá vôi hùng vĩ.</p>
+                        <a href="#" class="inline-block px-4 py-2 text-sm font-medium text-white bg-sky-500 rounded-lg hover:bg-sky-600 transition duration-300">Xem chi tiết</a>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover transition duration-300">
+                    <img src="https://www.homepaylater.vn/static/d4f2c13637c198d9e593a3590e1b111b/22553/1_thanh_pho_hoi_an_duoc_unesco_cong_nhan_la_di_san_van_hoa_the_gioi_noi_tieng_voi_nhung_ngoi_nha_co_kinh_62c7183de4.jpg" alt="Phố cổ Hội An" class="w-full h-56 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/ffb74d/ffffff?text=Lỗi+tải+ảnh';">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Phố cổ Hội An</h3>
+                        <p class="text-gray-600 text-sm mb-4">Dạo bước trong không gian cổ kính, lung linh đèn lồng và ẩm thực đặc sắc.</p>
+                        <a href="#" class="inline-block px-4 py-2 text-sm font-medium text-white bg-sky-500 rounded-lg hover:bg-sky-600 transition duration-300">Xem chi tiết</a>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover transition duration-300">
+                    <img src="https://vcdn1-dulich.vnecdn.net/2022/04/08/dulichPhuQuoc-1649392573-9234-1649405369.jpg?w=0&h=0&q=100&dpr=2&fit=crop&s=SU6n3IvJxW1Sla0xqg31Kg" alt="Đảo Phú Quốc" class="w-full h-56 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/4fc3f7/ffffff?text=Lỗi+tải+ảnh';">
+                    <div class="p-6">
+                        <h3 class="text-xl font-semibold text-gray-800 mb-2">Đảo Phú Quốc</h3>
+                        <p class="text-gray-600 text-sm mb-4">Tận hưởng những bãi biển cát trắng, nước trong xanh và hải sản tươi ngon.</p>
+                        <a href="#" class="inline-block px-4 py-2 text-sm font-medium text-white bg-sky-500 rounded-lg hover:bg-sky-600 transition duration-300">Xem chi tiết</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="travel-styles" class="py-16 bg-gray-50">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Loại Hình Du Lịch Ưa Thích</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+                <div class="relative rounded-xl overflow-hidden card-hover transition duration-300 group">
+                    <img src="https://images.unsplash.com/photo-1506744038136-46273834b3fb?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" alt="Du lịch Phiêu lưu" class="w-full h-72 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/400x500/ef5350/ffffff?text=Lỗi+tải+ảnh';">
+                    <div class="absolute inset-0 bg-black bg-opacity-40 flex items-end p-6">
+                        <h3 class="text-2xl font-semibold text-white group-hover:text-sky-300 transition duration-300">Phiêu Lưu Mạo Hiểm</h3>
+                    </div>
+                    <a href="#" class="absolute inset-0 z-10"></a>
+                </div>
+                <div class="relative rounded-xl overflow-hidden card-hover transition duration-300 group">
+                    <img src="https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" alt="Du lịch Nghỉ dưỡng" class="w-full h-72 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/400x500/66bb6a/ffffff?text=Lỗi+tải+ảnh';">
+                    <div class="absolute inset-0 bg-black bg-opacity-40 flex items-end p-6">
+                        <h3 class="text-2xl font-semibold text-white group-hover:text-sky-300 transition duration-300">Nghỉ Dưỡng Thư Giãn</h3>
+                    </div>
+                     <a href="#" class="absolute inset-0 z-10"></a>
+                </div>
+                <div class="relative rounded-xl overflow-hidden card-hover transition duration-300 group">
+                    <img src="https://owa.bestprice.vn/images/tickets/735_415/tour-kham-pha-van-hoa-viet-vinwonders-nam-hoi-an-668ca102bcc29.jpg" alt="Du lịch Văn hóa" class="w-full h-72 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/400x500/ffa726/ffffff?text=Lỗi+tải+ảnh';">
+                    <div class="absolute inset-0 bg-black bg-opacity-40 flex items-end p-6">
+                        <h3 class="text-2xl font-semibold text-white group-hover:text-sky-300 transition duration-300">Khám Phá Văn Hóa</h3>
+                    </div>
+                     <a href="#" class="absolute inset-0 z-10"></a>
+                </div>
+                 <div class="relative rounded-xl overflow-hidden card-hover transition duration-300 group">
+                    <img src="https://images.unsplash.com/photo-1414235077428-338989a2e8c0?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=400&q=80" alt="Du lịch Ẩm thực" class="w-full h-72 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/400x500/29b6f6/ffffff?text=Lỗi+tải+ảnh';">
+                    <div class="absolute inset-0 bg-black bg-opacity-40 flex items-end p-6">
+                        <h3 class="text-2xl font-semibold text-white group-hover:text-sky-300 transition duration-300">Trải Nghiệm Ẩm Thực</h3>
+                    </div>
+                     <a href="#" class="absolute inset-0 z-10"></a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section id="blog" class="py-16 bg-white">
+        <div class="container mx-auto px-6">
+            <h2 class="text-3xl font-bold text-center text-gray-800 mb-12">Cẩm Nang Du Lịch Từ Vi Vu</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover transition duration-300">
+                    <img src="https://images.unsplash.com/photo-1522199710521-72d69614c702?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Mẹo du lịch" class="w-full h-56 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/ab47bc/ffffff?text=Lỗi+tải+ảnh';">
+                    <div class="p-6">
+                        <span class="text-xs text-sky-600 font-semibold uppercase">Mẹo hay</span>
+                        <h3 class="text-xl font-semibold text-gray-800 mt-1 mb-2">10 mẹo đóng gói hành lý siêu gọn nhẹ cho chuyến đi</h3>
+                        <p class="text-gray-600 text-sm mb-4">Chuẩn bị hành lý thông minh giúp bạn có một chuyến đi thoải mái và tiện lợi hơn...</p>
+                        <a href="#" class="text-sky-500 hover:text-sky-700 font-medium transition duration-300">Đọc thêm <i class="fas fa-arrow-right text-xs ml-1"></i></a>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover transition duration-300">
+                    <img src="https://images.unsplash.com/photo-1502602898657-3e91760cbb34?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Review địa điểm" class="w-full h-56 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/7e57c2/ffffff?text=Lỗi+tải+ảnh';">
+                    <div class="p-6">
+                        <span class="text-xs text-sky-600 font-semibold uppercase">Review</span>
+                        <h3 class="text-xl font-semibold text-gray-800 mt-1 mb-2">Đà Lạt mùa sương: Vẻ đẹp nao lòng không thể bỏ lỡ</h3>
+                        <p class="text-gray-600 text-sm mb-4">Khám phá những góc check-in huyền ảo và trải nghiệm không khí se lạnh đặc trưng...</p>
+                        <a href="#" class="text-sky-500 hover:text-sky-700 font-medium transition duration-300">Đọc thêm <i class="fas fa-arrow-right text-xs ml-1"></i></a>
+                    </div>
+                </div>
+                <div class="bg-white rounded-xl shadow-lg overflow-hidden card-hover transition duration-300 hidden md:block">
+                    <img src="https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Kinh nghiệm hay" class="w-full h-56 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/5c6bc0/ffffff?text=Lỗi+tải+ảnh';">
+                    <div class="p-6">
+                        <span class="text-xs text-sky-600 font-semibold uppercase">Kinh nghiệm</span>
+                        <h3 class="text-xl font-semibold text-gray-800 mt-1 mb-2">Bí kíp săn vé máy bay giá rẻ cho người mới bắt đầu</h3>
+                        <p class="text-gray-600 text-sm mb-4">Những mẹo nhỏ giúp bạn tiết kiệm chi phí đáng kể cho hành trình khám phá...</p>
+                        <a href="#" class="text-sky-500 hover:text-sky-700 font-medium transition duration-300">Đọc thêm <i class="fas fa-arrow-right text-xs ml-1"></i></a>
+                    </div>
+                </div>
+            </div>
+             <div class="text-center mt-12">
+                <a href="#" class="px-8 py-3 text-lg font-semibold text-white bg-sky-500 rounded-lg hover:bg-sky-600 transition duration-300">Xem tất cả bài viết</a>
+            </div>
+        </div>
+    </section>
+
+    <footer class="bg-gray-800 text-gray-300 py-12">
+        <div class="container mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h4 class="text-xl font-bold text-white mb-4">Vi Vu</h4>
+                    <p class="text-sm">Khám phá thế giới, trải nghiệm cuộc sống. Cùng Vi Vu tạo nên những kỷ niệm đáng nhớ.</p>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold text-white mb-3">Liên kết nhanh</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-sky-400 transition duration-300">Về chúng tôi</a></li>
+                        <li><a href="#destinations" class="hover:text-sky-400 transition duration-300">Điểm đến</a></li>
+                        <li><a href="#blog" class="hover:text-sky-400 transition duration-300">Blog du lịch</a></li>
+                        <li><a href="#" class="hover:text-sky-400 transition duration-300">Câu hỏi thường gặp</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold text-white mb-3">Hỗ trợ</h5>
+                    <ul class="space-y-2 text-sm">
+                        <li><a href="#" class="hover:text-sky-400 transition duration-300">Trung tâm trợ giúp</a></li>
+                        <li><a href="#" class="hover:text-sky-400 transition duration-300">Chính sách bảo mật</a></li>
+                        <li><a href="#" class="hover:text-sky-400 transition duration-300">Điều khoản dịch vụ</a></li>
+                        <li><a href="#" class="hover:text-sky-400 transition duration-300">Liên hệ</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h5 class="text-lg font-semibold text-white mb-3">Kết nối với Vi Vu</h5>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-300 hover:text-sky-400 transition duration-300"><i class="fab fa-facebook-f fa-lg"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-sky-400 transition duration-300"><i class="fab fa-instagram fa-lg"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-sky-400 transition duration-300"><i class="fab fa-youtube fa-lg"></i></a>
+                        <a href="#" class="text-gray-300 hover:text-sky-400 transition duration-300"><i class="fab fa-tiktok fa-lg"></i></a>
+                    </div>
+                    <p class="text-sm mt-4">Nhận bản tin du lịch mới nhất:</p>
+                    <form class="mt-2 flex">
+                        <input type="email" placeholder="Email của bạn" class="w-full px-3 py-2 rounded-l-lg text-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-sky-400">
+                        <button type="submit" class="bg-sky-500 hover:bg-sky-600 text-white px-4 py-2 rounded-r-lg text-sm font-semibold transition duration-300">Đăng ký</button>
+                    </form>
+                </div>
+            </div>
+            <div class="border-t border-gray-700 pt-8 text-center text-sm">
+                <p>&copy; 2024 Vi Vu. Phát triển bởi Nhóm Vi Vu. Bảo lưu mọi quyền.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        mobileMenuButton.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+
+        // Close mobile menu when a link is clicked
+        const mobileMenuLinks = mobileMenu.querySelectorAll('a');
+        mobileMenuLinks.forEach(link => {
+            link.addEventListener('click', () => {
+                mobileMenu.classList.add('hidden');
+            });
+        });
+    </script>
+
+</body>
+</html>
