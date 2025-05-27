@@ -10,11 +10,11 @@
     <style>
         body {
             font-family: 'Inter', sans-serif;
-            overscroll-behavior-y: contain; /* Prevents pull-to-refresh on the body */
+            overscroll-behavior-y: contain;
         }
         .mobile-screen-container {
-            max-width: 420px; /* Typical mobile width */
-            min-height: 100vh; /* Full viewport height */
+            max-width: 420px; 
+            min-height: 100vh;
             margin: 0 auto;
             box-shadow: 0 0 20px rgba(0,0,0,0.1);
             display: flex;
@@ -23,25 +23,40 @@
         }
         .app-content {
             flex-grow: 1;
-            overflow-y: auto; /* Allows content to scroll */
-            padding-bottom: 70px; /* Space for bottom nav */
+            overflow-y: auto;
+            padding-bottom: 70px; 
         }
         .bottom-nav {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
-            max-width: 420px; /* Match container width */
-            margin: 0 auto; /* Center it */
+            max-width: 420px; 
+            margin: 0 auto; 
             z-index: 1000;
             border-top: 1px solid #e2e8f0; /* border-gray-300 */
         }
         .nav-item.active i, .nav-item.active span {
             color: #0ea5e9; /* sky-600 */
         }
-        /* Helper for scrollable content */
         .scrollable-content {
-             -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+             -webkit-overflow-scrolling: touch;
+        }
+        .pro-badge-app {
+            background: linear-gradient(to right, #fbbf24, #f59e0b); /* amber-400 to amber-500 */
+            color: white;
+            font-size: 0.6rem; /* Smaller for app */
+            padding: 0.1rem 0.3rem;
+            border-radius: 0.25rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            display: inline-block;
+        }
+         .header-sticky {
+            position: sticky;
+            top: 0;
+            background-color: inherit; /* Inherit from parent, like #f7fafc or #fff */
+            z-index: 50; /* Ensure it's above scrolling content */
         }
     </style>
 </head>
@@ -69,6 +84,16 @@
                 </section>
 
                 <section class="p-4">
+                    <div class="bg-gradient-to-r from-amber-400 to-amber-600 p-4 rounded-lg shadow-lg text-white flex items-center justify-between" onclick="navigateToScreen('vivu-pro-screen')">
+                        <div>
+                            <h3 class="font-bold text-lg">Trải nghiệm Vi Vu Pro!</h3>
+                            <p class="text-xs">Ưu đãi độc quyền & tính năng nâng cao.</p>
+                        </div>
+                        <i class="fas fa-crown fa-2x"></i>
+                    </div>
+                </section>
+
+                <section class="p-4">
                     <h2 class="text-lg font-semibold text-gray-700 mb-3">Khám phá nhanh</h2>
                     <div class="flex space-x-3 overflow-x-auto pb-2">
                         <button class="px-4 py-2 bg-sky-100 text-sky-700 rounded-full text-sm font-medium whitespace-nowrap">Gần bạn</button>
@@ -80,10 +105,16 @@
                 </section>
 
                 <section class="p-4">
-                    <h2 class="text-lg font-semibold text-gray-700 mb-3">Điểm đến nổi bật</h2>
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-lg font-semibold text-gray-700">Điểm đến nổi bật</h2>
+                        <a href="#" class="text-sm text-sky-600 font-medium">Xem tất cả</a>
+                    </div>
                     <div class="grid grid-cols-1 gap-4">
                         <div class="bg-white rounded-lg shadow-md overflow-hidden" onclick="navigateToScreen('destination-detail-screen')">
-                            <img src="https://images.unsplash.com/photo-1560930950-5cc2061071c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Vịnh Hạ Long" class="w-full h-40 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/81c784/ffffff?text=Hạ+Long';">
+                            <div class="relative">
+                                <img src="https://images.unsplash.com/photo-1560930950-5cc2061071c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Vịnh Hạ Long" class="w-full h-40 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/81c784/ffffff?text=Hạ+Long';">
+                                <span class="absolute top-2 right-2 pro-badge-app">PRO</span>
+                            </div>
                             <div class="p-4">
                                 <h3 class="text-md font-semibold text-gray-800">Vịnh Hạ Long</h3>
                                 <p class="text-xs text-gray-500 mb-1">Quảng Ninh, Việt Nam</p>
@@ -106,46 +137,70 @@
                         </div>
                     </div>
                 </section>
+
+                 <section class="p-4">
+                    <div class="flex justify-between items-center mb-3">
+                        <h2 class="text-lg font-semibold text-gray-700">Gợi ý hành trình</h2>
+                        <a href="#" class="text-sm text-sky-600 font-medium">Xem thêm</a>
+                    </div>
+                    <div class="space-y-3">
+                        <div class="bg-white p-3 rounded-lg shadow-md" onclick="navigateToScreen('itinerary-detail-screen')">
+                            <div class="flex justify-between items-start">
+                                <div>
+                                    <h3 class="font-semibold text-gray-800">3 ngày khám phá Đà Lạt mộng mơ</h3>
+                                    <p class="text-xs text-gray-500">Đà Lạt <span class="mx-1">&bull;</span> 3 ngày 2 đêm</p>
+                                </div>
+                                <span class="pro-badge-app mt-1">PRO</span>
+                            </div>
+                            <p class="text-xs text-gray-600 mt-2">Hành trình tối ưu cho người mới đến, bao gồm các điểm check-in hot nhất...</p>
+                        </div>
+                         <div class="bg-white p-3 rounded-lg shadow-md" onclick="navigateToScreen('itinerary-detail-screen')">
+                            <h3 class="font-semibold text-gray-800">Food tour Hà Nội trong 24h</h3>
+                            <p class="text-xs text-gray-500">Hà Nội <span class="mx-1">&bull;</span> 1 ngày</p>
+                            <p class="text-xs text-gray-600 mt-2">Thưởng thức những món ăn đường phố trứ danh của thủ đô...</p>
+                        </div>
+                    </div>
+                </section>
             </div>
 
-            <div id="search-results-screen" class="hidden p-4">
-                <header class="flex items-center mb-4 sticky top-0 bg-gray-100 py-3 z-10 -mx-4 px-4 border-b">
-                    <button onclick="navigateToScreen('home-screen')" class="text-sky-600 mr-3"><i class="fas fa-arrow-left fa-lg"></i></button>
-                    <h2 class="text-lg font-semibold text-gray-800">Kết quả cho "Đà Lạt"</h2>
-                </header>
-                <div class="flex justify-between items-center mb-4">
-                    <span class="text-sm text-gray-600">Tìm thấy 25 địa điểm</span>
-                    <div>
-                        <button class="text-sm text-sky-600 font-medium"><i class="fas fa-filter mr-1"></i> Lọc</button>
-                        <button class="text-sm text-sky-600 font-medium ml-3"><i class="fas fa-sort-amount-down mr-1"></i> Sắp xếp</button>
+            <div id="search-results-screen" class="hidden">
+                <header class="header-sticky flex items-center p-4 border-b bg-gray-100">
+                    <button onclick="goBack()" class="text-sky-600 mr-4"><i class="fas fa-arrow-left fa-lg"></i></button>
+                    <h2 class="text-lg font-semibold text-gray-800 flex-1">Kết quả cho "Đà Lạt"</h2>
+                    <button class="text-sky-600"><i class="fas fa-sliders-h fa-lg"></i></button> </header>
+                <div class="p-4">
+                    <div class="mb-4">
+                        <span class="text-sm text-gray-600">Tìm thấy 25 địa điểm. </span>
+                        <span class="text-sm text-amber-600">Nâng cấp Pro để dùng bộ lọc nâng cao!</span>
                     </div>
-                </div>
-                <div class="space-y-4">
-                    <div class="bg-white p-3 rounded-lg shadow-md flex items-center space-x-3" onclick="navigateToScreen('destination-detail-screen')">
-                        <img src="https://placehold.co/100x100/a5d6a7/ffffff?text=Hồ+Xuân+Hương" alt="Địa điểm" class="w-20 h-20 rounded-md object-cover">
-                        <div class="flex-1">
-                            <h3 class="font-semibold text-gray-800">Hồ Xuân Hương</h3>
-                            <p class="text-xs text-gray-500">Trung tâm Đà Lạt</p>
-                            <div class="flex items-center text-xs mt-1">
-                                <i class="fas fa-star text-yellow-400 mr-1"></i> 4.7
-                                <span class="text-gray-400 ml-2">(800+ đánh giá)</span>
+                    <div class="space-y-4">
+                        <div class="bg-white p-3 rounded-lg shadow-md flex items-center space-x-3" onclick="navigateToScreen('destination-detail-screen')">
+                            <img src="https://placehold.co/100x100/a5d6a7/ffffff?text=Hồ+Xuân+Hương" alt="Địa điểm" class="w-20 h-20 rounded-md object-cover">
+                            <div class="flex-1">
+                                <h3 class="font-semibold text-gray-800">Hồ Xuân Hương</h3>
+                                <p class="text-xs text-gray-500">Trung tâm Đà Lạt</p>
+                                <div class="flex items-center text-xs mt-1">
+                                    <i class="fas fa-star text-yellow-400 mr-1"></i> 4.7
+                                    <span class="text-gray-400 ml-2">(800+)</span>
+                                </div>
                             </div>
-                            <p class="text-xs text-green-600 font-medium mt-1">Còn phòng</p>
+                            <button class="text-gray-400 hover:text-red-500"><i class="fas fa-heart fa-lg"></i></button>
                         </div>
-                        <button class="text-gray-400 hover:text-red-500"><i class="fas fa-heart fa-lg"></i></button>
-                    </div>
-                     <div class="bg-white p-3 rounded-lg shadow-md flex items-center space-x-3" onclick="navigateToScreen('destination-detail-screen')">
-                        <img src="https://placehold.co/100x100/81d4fa/ffffff?text=Thung+Lũng+Tình+Yêu" alt="Địa điểm" class="w-20 h-20 rounded-md object-cover">
-                        <div class="flex-1">
-                            <h3 class="font-semibold text-gray-800">Thung Lũng Tình Yêu</h3>
-                            <p class="text-xs text-gray-500">Đà Lạt</p>
-                            <div class="flex items-center text-xs mt-1">
-                                <i class="fas fa-star text-yellow-400 mr-1"></i> 4.5
-                                <span class="text-gray-400 ml-2">(650+ đánh giá)</span>
+                         <div class="bg-white p-3 rounded-lg shadow-md flex items-center space-x-3" onclick="navigateToScreen('destination-detail-screen')">
+                            <img src="https://placehold.co/100x100/81d4fa/ffffff?text=Thung+Lũng" alt="Địa điểm" class="w-20 h-20 rounded-md object-cover">
+                            <div class="flex-1">
+                                <div class="flex items-center">
+                                    <h3 class="font-semibold text-gray-800 mr-2">Thung Lũng Tình Yêu</h3>
+                                    <span class="pro-badge-app">PRO</span>
+                                </div>
+                                <p class="text-xs text-gray-500">Đà Lạt</p>
+                                <div class="flex items-center text-xs mt-1">
+                                    <i class="fas fa-star text-yellow-400 mr-1"></i> 4.5
+                                    <span class="text-gray-400 ml-2">(650+)</span>
+                                </div>
                             </div>
-                             <p class="text-xs text-red-600 font-medium mt-1">Sắp hết phòng</p>
+                            <button class="text-red-500"><i class="fas fa-heart fa-lg"></i></button>
                         </div>
-                        <button class="text-red-500"><i class="fas fa-heart fa-lg"></i></button>
                     </div>
                 </div>
             </div>
@@ -153,13 +208,17 @@
             <div id="destination-detail-screen" class="hidden">
                 <div class="relative">
                     <img src="https://images.unsplash.com/photo-1560930950-5cc2061071c3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=600&q=80" alt="Vịnh Hạ Long" class="w-full h-64 object-cover" onerror="this.onerror=null;this.src='https://placehold.co/600x400/81c784/ffffff?text=Hạ+Long';">
-                    <button onclick="goBack()" class="absolute top-4 left-4 bg-black bg-opacity-50 text-white p-2 rounded-full z-20">
+                    <button onclick="goBack()" class="absolute top-4 left-4 bg-black bg-opacity-50 text-white w-8 h-8 rounded-full flex items-center justify-center z-20">
                         <i class="fas fa-arrow-left"></i>
                     </button>
-                    <button class="absolute top-4 right-4 bg-black bg-opacity-50 text-white p-2 rounded-full z-20">
-                        <i class="far fa-heart"></i> </button>
+                    <button class="absolute top-4 right-4 bg-black bg-opacity-50 text-white w-8 h-8 rounded-full flex items-center justify-center z-20">
+                        <i class="far fa-heart"></i>
+                    </button>
                     <div class="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black via-black/70 to-transparent">
-                        <h1 class="text-2xl font-bold text-white">Vịnh Hạ Long</h1>
+                        <div class="flex items-center mb-1">
+                            <h1 class="text-2xl font-bold text-white mr-2">Vịnh Hạ Long</h1>
+                            <span class="pro-badge-app">PRO Ưu Đãi</span>
+                        </div>
                         <p class="text-sm text-gray-200">Quảng Ninh, Việt Nam</p>
                     </div>
                 </div>
@@ -170,69 +229,150 @@
                             <span class="font-semibold">4.8</span>
                             <span class="text-gray-500 ml-1">(1.2k đánh giá)</span>
                         </div>
-                        <a href="#" class="text-sky-600 font-medium">Xem tất cả</a>
+                        <a href="#" class="text-sky-600 font-medium text-sm">Xem tất cả đánh giá</a>
                     </div>
-                    <p class="text-gray-700 leading-relaxed">
-                        Vịnh Hạ Long là một di sản thiên nhiên thế giới được UNESCO công nhận, nổi tiếng với hàng ngàn hòn đảo đá vôi và núi đá vôi hùng vĩ nổi lên từ mặt nước xanh biếc. Khám phá các hang động tuyệt đẹp, chèo thuyền kayak, hoặc thư giãn trên du thuyền.
+                    <p class="text-gray-700 leading-relaxed text-sm">
+                        Vịnh Hạ Long là một di sản thiên nhiên thế giới được UNESCO công nhận, nổi tiếng với hàng ngàn hòn đảo đá vôi...
                     </p>
-                    <div>
-                        <h3 class="text-md font-semibold text-gray-800 mb-2">Tiện nghi nổi bật</h3>
-                        <div class="flex flex-wrap gap-2 text-sm">
-                            <span class="bg-sky-100 text-sky-700 px-2 py-1 rounded-full"><i class="fas fa-ship mr-1"></i> Du thuyền</span>
-                            <span class="bg-sky-100 text-sky-700 px-2 py-1 rounded-full"><i class="fas fa-person-swimming mr-1"></i> Chèo Kayak</span>
-                            <span class="bg-sky-100 text-sky-700 px-2 py-1 rounded-full"><i class="fas fa-camera mr-1"></i> Ngắm cảnh</span>
-                            <span class="bg-sky-100 text-sky-700 px-2 py-1 rounded-full"><i class="fas fa-utensils mr-1"></i> Hải sản tươi</span>
-                        </div>
+                    
+                    <div class="bg-amber-50 p-3 rounded-lg border border-amber-300">
+                        <h4 class="font-semibold text-amber-700 mb-1"><i class="fas fa-crown mr-1"></i> Gợi ý hành trình PRO</h4>
+                        <p class="text-xs text-amber-600">Khám phá Vịnh Hạ Long 2 ngày 1 đêm trên du thuyền 5 sao với lịch trình độc quyền cho thành viên Pro.</p>
+                        <button onclick="navigateToScreen('vivu-pro-screen')" class="text-xs text-amber-700 font-bold mt-2 hover:underline">Nâng cấp để xem chi tiết</button>
                     </div>
-                     <button class="w-full bg-sky-500 text-white font-semibold py-3 rounded-lg hover:bg-sky-600 transition duration-300 mt-4">
+
+                    <button class="w-full bg-sky-500 text-white font-semibold py-3 rounded-lg hover:bg-sky-600 transition duration-300 mt-4">
                         Đặt tour ngay
                     </button>
                 </div>
             </div>
-             <div id="profile-screen" class="hidden p-4">
-                <header class="flex items-center mb-6">
-                     <h2 class="text-xl font-semibold text-gray-800">Tài khoản của tôi</h2>
-                </header>
-                <div class="flex items-center space-x-4 mb-8">
-                    <img src="https://placehold.co/80x80/e0e0e0/757575?text=User" alt="User Avatar" class="w-20 h-20 rounded-full object-cover">
-                    <div>
-                        <h3 class="text-lg font-semibold text-gray-800">Trương Nguyễn Tiến Đạt</h3>
-                        <p class="text-sm text-gray-500">kthkun@gmail.com</p>
-                        <a href="#" class="text-xs text-sky-600 font-medium">Chỉnh sửa hồ sơ</a>
-                    </div>
-                </div>
 
-                <div class="space-y-3">
-                    <a href="#" class="flex items-center justify-between p-3 bg-white rounded-lg shadow hover:bg-gray-50 transition">
-                        <div class="flex items-center">
-                            <i class="fas fa-heart text-sky-600 w-6 text-center mr-3"></i>
-                            <span class="text-gray-700">Địa điểm đã thích</span>
-                        </div>
-                        <i class="fas fa-chevron-right text-gray-400"></i>
-                    </a>
-                    <a href="#" class="flex items-center justify-between p-3 bg-white rounded-lg shadow hover:bg-gray-50 transition">
-                        <div class="flex items-center">
-                            <i class="fas fa-bookmark text-sky-600 w-6 text-center mr-3"></i>
-                            <span class="text-gray-700">Chuyến đi đã lưu</span>
-                        </div>
-                        <i class="fas fa-chevron-right text-gray-400"></i>
-                    </a>
-                    <a href="#" class="flex items-center justify-between p-3 bg-white rounded-lg shadow hover:bg-gray-50 transition">
-                        <div class="flex items-center">
-                            <i class="fas fa-cog text-sky-600 w-6 text-center mr-3"></i>
-                            <span class="text-gray-700">Cài đặt</span>
-                        </div>
-                        <i class="fas fa-chevron-right text-gray-400"></i>
-                    </a>
-                     <a href="#" class="flex items-center justify-between p-3 bg-white rounded-lg shadow hover:bg-gray-50 transition">
-                        <div class="flex items-center">
-                            <i class="fas fa-sign-out-alt text-red-500 w-6 text-center mr-3"></i>
-                            <span class="text-red-500">Đăng xuất</span>
-                        </div>
-                    </a>
+            <div id="itinerary-detail-screen" class="hidden">
+                 <header class="header-sticky flex items-center p-4 border-b bg-gray-100">
+                    <button onclick="goBack()" class="text-sky-600 mr-4"><i class="fas fa-arrow-left fa-lg"></i></button>
+                    <h2 class="text-lg font-semibold text-gray-800 flex-1">Chi tiết hành trình</h2>
+                </header>
+                <div class="p-4">
+                    <h1 class="text-xl font-bold mb-2">3 ngày khám phá Đà Lạt mộng mơ <span class="pro-badge-app">PRO</span></h1>
+                    <p class="text-sm text-gray-600 mb-4">Hành trình này được thiết kế đặc biệt cho thành viên Vi Vu Pro, bao gồm các trải nghiệm độc quyền và gợi ý ẩm thực địa phương không thể bỏ qua.</p>
+                    <p class="text-center text-gray-500 mt-10">Nội dung chi tiết hành trình sẽ được hiển thị ở đây...</p>
+                     <button onclick="navigateToScreen('vivu-pro-screen')" class="w-full bg-amber-500 text-white font-semibold py-3 rounded-lg hover:bg-amber-600 transition duration-300 mt-6">
+                        Mở khóa toàn bộ hành trình PRO
+                    </button>
                 </div>
             </div>
 
+
+            <div id="profile-screen" class="hidden">
+                <header class="header-sticky p-4 border-b bg-gray-100">
+                     <h2 class="text-xl font-semibold text-gray-800 text-center">Tài khoản của tôi</h2>
+                </header>
+                <div class="p-4">
+                    <div class="flex items-center space-x-4 mb-6">
+                        <img src="https://placehold.co/80x80/e0e0e0/757575?text=User" alt="User Avatar" class="w-20 h-20 rounded-full object-cover border-2 border-sky-500">
+                        <div>
+                            <h3 class="text-lg font-semibold text-gray-800">Trương Nguyễn Tiến Đạt</h3>
+                            <p class="text-sm text-gray-500">kthkun@gmail.com</p>
+                        </div>
+                    </div>
+
+                    <div class="bg-gradient-to-r from-amber-400 to-amber-600 p-4 rounded-lg shadow-lg text-white mb-6" onclick="navigateToScreen('vivu-pro-screen')">
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <h3 class="font-bold text-lg">Nâng cấp Vi Vu Pro</h3>
+                                <p class="text-xs">Trải nghiệm du lịch đỉnh cao!</p>
+                            </div>
+                            <i class="fas fa-arrow-right fa-lg"></i>
+                        </div>
+                    </div>
+
+                    <div class="space-y-2">
+                        <a href="#" class="flex items-center justify-between p-3 bg-white rounded-lg shadow hover:bg-gray-50 transition">
+                            <div class="flex items-center"> <i class="fas fa-user-edit text-sky-600 w-6 text-center mr-3"></i> <span class="text-gray-700">Chỉnh sửa hồ sơ</span></div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </a>
+                        <a href="#" class="flex items-center justify-between p-3 bg-white rounded-lg shadow hover:bg-gray-50 transition">
+                            <div class="flex items-center"> <i class="fas fa-heart text-sky-600 w-6 text-center mr-3"></i> <span class="text-gray-700">Địa điểm đã thích</span></div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </a>
+                        <a href="#" class="flex items-center justify-between p-3 bg-white rounded-lg shadow hover:bg-gray-50 transition">
+                            <div class="flex items-center"> <i class="fas fa-bookmark text-sky-600 w-6 text-center mr-3"></i> <span class="text-gray-700">Chuyến đi đã lưu</span></div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </a>
+                        <a href="#" class="flex items-center justify-between p-3 bg-white rounded-lg shadow hover:bg-gray-50 transition">
+                            <div class="flex items-center"> <i class="fas fa-cog text-sky-600 w-6 text-center mr-3"></i> <span class="text-gray-700">Cài đặt</span></div>
+                            <i class="fas fa-chevron-right text-gray-400"></i>
+                        </a>
+                         <a href="#" class="flex items-center justify-between p-3 bg-white rounded-lg shadow hover:bg-gray-50 transition mt-4">
+                            <div class="flex items-center"> <i class="fas fa-sign-out-alt text-red-500 w-6 text-center mr-3"></i> <span class="text-red-500">Đăng xuất</span></div>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="vivu-pro-screen" class="hidden">
+                <header class="header-sticky flex items-center p-4 border-b bg-gray-100">
+                    <button onclick="goBack()" class="text-sky-600 mr-4"><i class="fas fa-arrow-left fa-lg"></i></button>
+                    <h2 class="text-lg font-semibold text-gray-800 flex-1 text-center">
+                        <i class="fas fa-crown text-amber-500 mr-2"></i>Vi Vu Pro
+                    </h2>
+                    <div class="w-8"></div> </header>
+                <div class="p-5">
+                    <div class="text-center mb-6">
+                        <i class="fas fa-gem fa-3x text-amber-500 mb-3"></i>
+                        <h1 class="text-2xl font-bold text-gray-800">Mở Khóa Trải Nghiệm Du Lịch Đỉnh Cao</h1>
+                        <p class="text-gray-600 mt-1">Nâng cấp lên Vi Vu Pro để tận hưởng những đặc quyền tốt nhất!</p>
+                    </div>
+
+                    <div class="space-y-4 mb-8">
+                        <div class="flex items-start p-3 bg-white rounded-lg shadow">
+                            <i class="fas fa-route text-sky-500 fa-lg mr-3 mt-1 w-5 text-center"></i>
+                            <div>
+                                <h4 class="font-semibold text-gray-700">Gợi ý hành trình độc quyền</h4>
+                                <p class="text-xs text-gray-500">Lịch trình chi tiết, mẹo hay từ chuyên gia, trải nghiệm không đụng hàng.</p>
+                            </div>
+                        </div>
+                         <div class="flex items-start p-3 bg-white rounded-lg shadow">
+                            <i class="fas fa-search-location text-sky-500 fa-lg mr-3 mt-1 w-5 text-center"></i>
+                            <div>
+                                <h4 class="font-semibold text-gray-700">Bộ lọc tìm kiếm nâng cao</h4>
+                                <p class="text-xs text-gray-500">Tìm kiếm chính xác theo sở thích, ngân sách, tiện ích mong muốn.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start p-3 bg-white rounded-lg shadow">
+                            <i class="fas fa-tags text-sky-500 fa-lg mr-3 mt-1 w-5 text-center"></i>
+                            <div>
+                                <h4 class="font-semibold text-gray-700">Ưu đãi Pro hấp dẫn</h4>
+                                <p class="text-xs text-gray-500">Giảm giá đặc biệt cho khách sạn, tour, vé tham quan từ đối tác.</p>
+                            </div>
+                        </div>
+                        <div class="flex items-start p-3 bg-white rounded-lg shadow">
+                            <i class="fas fa-eye-slash text-sky-500 fa-lg mr-3 mt-1 w-5 text-center"></i>
+                            <div>
+                                <h4 class="font-semibold text-gray-700">Trải nghiệm không quảng cáo</h4>
+                                <p class="text-xs text-gray-500">Tập trung khám phá mà không bị làm phiền.</p>
+                            </div>
+                        </div>
+                         <div class="flex items-start p-3 bg-white rounded-lg shadow">
+                            <i class="fas fa-atlas text-sky-500 fa-lg mr-3 mt-1 w-5 text-center"></i>
+                            <div>
+                                <h4 class="font-semibold text-gray-700">Nội dung & bản đồ offline</h4>
+                                <p class="text-xs text-gray-500">Truy cập thông tin cần thiết ngay cả khi không có mạng.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="space-y-3">
+                        <button class="w-full bg-amber-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-amber-600 transition duration-300 shadow-md">
+                            Nâng cấp ngay - 99.000đ/tháng
+                        </button>
+                        <button class="w-full bg-amber-600 text-white font-bold py-3 px-4 rounded-lg hover:bg-amber-700 transition duration-300 shadow-md">
+                            Tiết kiệm với gói năm - 999.000đ/năm
+                        </button>
+                    </div>
+                     <p class="text-xs text-gray-500 text-center mt-4">Thanh toán an toàn. Hủy bất cứ lúc nào.</p>
+                </div>
+            </div>
 
         </main>
 
@@ -241,13 +381,15 @@
                 <i class="fas fa-home fa-lg mb-1"></i>
                 <span class="text-xs">Trang chủ</span>
             </button>
-            <button class="nav-item flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-sky-600 transition" data-screen="search-results-screen"> <i class="fas fa-search fa-lg mb-1"></i>
+            <button class="nav-item flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-sky-600 transition" data-screen="search-results-screen">
+                <i class="fas fa-search fa-lg mb-1"></i>
                 <span class="text-xs">Khám phá</span>
             </button>
-            <button class="nav-item flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-sky-600 transition" onclick="alert('Chức năng này sẽ sớm ra mắt!')">
+            <button class="nav-item flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-sky-600 transition" onclick="alert('Chức năng Thêm mới sẽ sớm ra mắt!')">
                 <i class="fas fa-plus-circle fa-2x text-sky-500"></i>
             </button>
-            <button class="nav-item flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-sky-600 transition" data-screen="destination-detail-screen"> <i class="far fa-heart fa-lg mb-1"></i>
+            <button class="nav-item flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-sky-600 transition" onclick="alert('Màn hình Yêu thích/Chuyến đi đã lưu sẽ sớm ra mắt!')">
+                 <i class="far fa-heart fa-lg mb-1"></i>
                 <span class="text-xs">Yêu thích</span>
             </button>
             <button class="nav-item flex-1 flex flex-col items-center justify-center text-gray-600 hover:text-sky-600 transition" data-screen="profile-screen">
@@ -259,65 +401,72 @@
 
     <script>
         const appView = document.getElementById('app-view');
-        const screens = appView.children;
+        const screens = Array.from(appView.children).filter(child => child.id); // Ensure only elements with ID are screens
         const navItems = document.querySelectorAll('.bottom-nav .nav-item');
-        let screenHistory = ['home-screen']; // Keep track of navigation history
+        let screenHistory = ['home-screen']; 
 
         function navigateToScreen(screenId) {
-            // Hide all screens
-            for (let screen of screens) {
-                screen.classList.add('hidden');
-            }
-            // Show the target screen
-            const targetScreen = document.getElementById(screenId);
-            if (targetScreen) {
-                targetScreen.classList.remove('hidden');
-                appView.scrollTop = 0; // Scroll to top of new screen
-
-                // Update active state for bottom nav
-                navItems.forEach(item => {
-                    item.classList.remove('active');
-                    if (item.dataset.screen === screenId) {
-                        item.classList.add('active');
-                    }
-                });
-                
-                // Add to history if it's a new screen (not going back)
-                // and not the same as the current last screen
-                if (screenHistory[screenHistory.length - 1] !== screenId) {
-                     // If navigating to a main tab, clear history and start new
-                    const mainTabs = ['home-screen', 'search-results-screen', 'profile-screen']; // Add other main tab IDs
-                    if (mainTabs.includes(screenId)) {
-                        screenHistory = [screenId];
-                    } else if (screenId === 'destination-detail-screen' && screenHistory[screenHistory.length-1] === screenId) {
-                        // Do nothing if trying to navigate to the same detail screen again from itself
-                    }
-                    else {
-                        screenHistory.push(screenId);
-                    }
+            let screenFound = false;
+            screens.forEach(screen => {
+                if (screen.id === screenId) {
+                    screen.classList.remove('hidden');
+                    screenFound = true;
+                } else {
+                    screen.classList.add('hidden');
                 }
+            });
+            
+            if (!screenFound) {
+                console.warn('Screen not found:', screenId, ". Defaulting to home-screen.");
+                document.getElementById('home-screen').classList.remove('hidden');
+                screenId = 'home-screen'; // Correct the screenId for history and nav
+            }
 
+            appView.scrollTop = 0; 
 
-            } else {
-                console.warn('Screen not found:', screenId);
-                // Optionally, go back to home screen if target not found
-                navigateToScreen('home-screen');
+            navItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.dataset.screen === screenId) {
+                    item.classList.add('active');
+                }
+            });
+            
+            if (screenHistory[screenHistory.length - 1] !== screenId) {
+                const mainTabs = ['home-screen', 'search-results-screen', 'profile-screen', 'vivu-pro-screen']; 
+                if (mainTabs.includes(screenId) && screenHistory.includes(screenId)) {
+                    // If navigating to a main tab already in history (e.g. via back button), set history to that point
+                    screenHistory = screenHistory.slice(0, screenHistory.indexOf(screenId) + 1);
+                } else if (mainTabs.includes(screenId)) {
+                     screenHistory = [screenId]; // Start new history for main tabs if not already there
+                }
+                else {
+                    screenHistory.push(screenId);
+                }
             }
         }
         
         function goBack() {
             if (screenHistory.length > 1) {
-                screenHistory.pop(); // Remove current screen
-                const previousScreenId = screenHistory[screenHistory.length - 1]; // Get the new last screen
+                screenHistory.pop(); 
+                const previousScreenId = screenHistory[screenHistory.length - 1];
                 navigateToScreen(previousScreenId);
             } else {
-                // If only home is in history, or history is empty, go to home
                 navigateToScreen('home-screen');
             }
         }
 
         navItems.forEach(item => {
-            item.addEventListener('click', () => {
+            item.addEventListener('click', (e) => {
+                // Check if the click is on the plus button which has its own onclick
+                if (e.currentTarget.querySelector('.fa-plus-circle')) {
+                    return; 
+                }
+                 // Check for placeholder favorites button
+                if (e.currentTarget.querySelector('.fa-heart') && !item.dataset.screen) {
+                     alert('Màn hình Yêu thích/Chuyến đi đã lưu sẽ sớm ra mắt!');
+                    return;
+                }
+
                 const screenId = item.dataset.screen;
                 if (screenId) {
                     navigateToScreen(screenId);
@@ -325,7 +474,6 @@
             });
         });
 
-        // Initialize with the home screen
         document.addEventListener('DOMContentLoaded', () => {
             navigateToScreen('home-screen');
         });
