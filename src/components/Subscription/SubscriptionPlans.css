@@ -1,0 +1,210 @@
+.subscription-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+.subscription-container h2 {
+  text-align: center;
+  color: #2c3e50;
+  margin-bottom: 30px;
+  font-size: 2em;
+}
+
+.current-subscription {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 30px;
+  border-left: 4px solid #3498db;
+}
+
+.current-subscription h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.subscription-info p {
+  margin: 8px 0;
+  color: #333;
+}
+
+.subscription-info .active {
+  color: #27ae60;
+  font-weight: 600;
+}
+
+.subscription-info .inactive {
+  color: #e74c3c;
+  font-weight: 600;
+}
+
+.trial-available {
+  background-color: #e8f5e8;
+  color: #155724;
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: 500;
+}
+
+.plans-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+  margin-bottom: 40px;
+}
+
+.plan-card {
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  padding: 30px;
+  text-align: center;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.plan-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+}
+
+.plan-card.yearly::before {
+  content: 'Phổ biến';
+  position: absolute;
+  top: 15px;
+  right: -30px;
+  background: #e74c3c;
+  color: white;
+  padding: 5px 40px;
+  font-size: 12px;
+  font-weight: 600;
+  transform: rotate(45deg);
+}
+
+.plan-header h3 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+  font-size: 1.5em;
+}
+
+.plan-price {
+  font-size: 2.5em;
+  font-weight: 700;
+  color: #3498db;
+  margin-bottom: 10px;
+}
+
+.plan-duration {
+  font-size: 0.4em;
+  color: #666;
+  font-weight: 400;
+}
+
+.plan-description {
+  margin: 20px 0;
+  color: #666;
+  line-height: 1.5;
+}
+
+.plan-features {
+  margin: 25px 0;
+  text-align: left;
+}
+
+.plan-features ul {
+  list-style: none;
+  padding: 0;
+}
+
+.plan-features li {
+  padding: 8px 0;
+  color: #333;
+  font-size: 14px;
+}
+
+.subscribe-button {
+  width: 100%;
+  padding: 15px;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+}
+
+.subscribe-button.monthly {
+  background-color: #3498db;
+  color: white;
+}
+
+.subscribe-button.monthly:hover:not(:disabled) {
+  background-color: #2980b9;
+  transform: translateY(-2px);
+}
+
+.subscribe-button.yearly {
+  background: linear-gradient(135deg, #e74c3c, #c0392b);
+  color: white;
+}
+
+.subscribe-button.yearly:hover:not(:disabled) {
+  background: linear-gradient(135deg, #c0392b, #a93226);
+  transform: translateY(-2px);
+}
+
+.subscribe-button:disabled {
+  background-color: #bdc3c7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.message {
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px 0;
+  text-align: center;
+}
+
+.message.success {
+  background-color: #d4edda;
+  color: #155724;
+  border: 1px solid #c3e6cb;
+}
+
+.message.error {
+  background-color: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+}
+
+.payment-info {
+  background: #f8f9fa;
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+}
+
+.payment-info h4 {
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.payment-info p {
+  margin: 8px 0;
+  color: #666;
+  font-size: 14px;
+}
+
+@media (max-width: 768px) {
+  .plans-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .plan-price {
+    font-size: 2em;
+  }
+}

@@ -1,0 +1,127 @@
+const mongoose = require("mongoose");
+const bcrypt = require("bcryptjs");
+
+const userSchema = new mongoose.Schema(
+  {
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      lowercase: true,
+      trim: true,
+    },
+    password: {
+      type: String,
+      required: true,
+      minlength: 6,
+    },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    subscription: {
+      type: {
+        type: String,
+        enum: ["trial", "monthly", "yearly", "expired"],
+        default: "trial",
+      },
+      startDate: {
+        type: Date,
+        default: Date.now,
+      },
+      endDate: {
+        type: Date,
+        default: function () {
+          // Trial expires after 24 hours
+          return new Date(Date.now() + 24 * 60 * 60 * 1000);
+        },
+      },
+      isActive: {
+        type: Boolean,
+        default: true,
+      },
+    },
+    usage: {
+      trialUsed: {
+        type: Boolean,
+        default: false,
+      },
+      searchCount: {
+        type: Number,
+        default: 0,
+      },
+      lastSearchDate: {
+        type: Date,
+      },
+    },
+    paymentHistory: [
+      {
+        orderId: String,
+        amount: Number,
+        currency: String,
+        subscriptionType: String,
+        paymentDate: Date,
+        status: String,
+      },
+    ],
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// Hash password before saving
+userSchema.pre("save", async function (next) {
+  if (!this.isModified("password")) return next();
+
+  try {
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Compare password method
+userSchema.methods.comparePassword = async function (candidatePassword) {
+  return bcrypt.compare(candidatePassword, this.password);
+};
+
+// Check if subscription is active
+userSchema.methods.isSubscriptionActive = function () {
+  if (this.subscription.type === "trial" && !this.usage.trialUsed) {
+    return true;
+  }
+
+  if (this.subscription.type === "expired") {
+    return false;
+  }
+
+  return this.subscription.isActive && new Date() < this.subscription.endDate;
+};
+
+// Check if user can use trial
+userSchema.methods.canUseTrial = function () {
+  return this.subscription.type === "trial" && !this.usage.trialUsed;
+};
+
+// Use trial
+userSchema.methods.useTrial = function () {
+  this.usage.trialUsed = true;
+  this.usage.searchCount += 1;
+  this.usage.lastSearchDate = new Date();
+};
+
+// Update subscription
+userSchema.methods.updateSubscription = function (type, months = 1) {
+  this.subscription.type = type;
+  this.subscription.startDate = new Date();
+  this.subscription.endDate = new Date(
+    Date.now() + months * 30 * 24 * 60 * 60 * 1000
+  );
+  this.subscription.isActive = true;
+};
+
+module.exports = mongoose.model("User", userSchema);

@@ -1,0 +1,118 @@
+.app-header {
+  background: linear-gradient(135deg, #3498db, #2980b9);
+  color: white;
+  padding: 15px 0;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.welcome-text {
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+.subscription-status {
+  font-size: 0.9em;
+}
+
+.trial-badge {
+  background-color: rgba(46, 204, 113, 0.2);
+  color: #27ae60;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+.active-badge {
+  background-color: rgba(46, 204, 113, 0.2);
+  color: #27ae60;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+.inactive-badge {
+  background-color: rgba(231, 76, 60, 0.2);
+  color: #e74c3c;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8em;
+  font-weight: 500;
+}
+
+.header-actions {
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.location-button,
+.subscription-button {
+  background-color: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.location-button:hover,
+.subscription-button:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-1px);
+}
+
+.logout-button {
+  background-color: rgba(231, 76, 60, 0.8);
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.logout-button:hover {
+  background-color: rgba(231, 76, 60, 1);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .header-actions {
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+  }
+  
+  .location-button,
+  .subscription-button,
+  .logout-button {
+    width: 100%;
+    max-width: 200px;
+  }
+}
