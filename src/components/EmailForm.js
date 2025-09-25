@@ -3,32 +3,30 @@ import axios from 'axios';
 import './EmailForm.css';
 
 const EmailForm = ({ threadId, setTravelInfo }) => {
-  const [showEmailForm, setShowEmailForm] = useState(false);
+  const [sendEmail, setSendEmail] = useState(false);
   const [emailData, setEmailData] = useState({
     senderEmail: '',
     receiverEmail: '',
-    subject: 'Thông tin du lịch'
+    subject: 'Thông tin du lịch cá nhân hóa'
   });
   const [loading, setLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(null);
 
-  const handleInputChange = (e) => {
-    setEmailData({
-      ...emailData,
-      [e.target.name]: e.target.value
-    });
+  const handleInputChange = (event) => {
+    const { name, value } = event.target;
+    setEmailData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+
     if (!emailData.senderEmail || !emailData.receiverEmail || !emailData.subject) {
-      setMessage({ type: 'error', text: 'Vui lòng điền đầy đủ thông tin email.' });
+      setMessage({ type: 'error', text: 'Vui lòng điền đầy đủ thông tin trước khi gửi.' });
       return;
     }
 
     setLoading(true);
-    setMessage('');
+    setMessage(null);
 
     try {
       await axios.post('/api/travel/send-email', {
@@ -36,18 +34,18 @@ const EmailForm = ({ threadId, setTravelInfo }) => {
         threadId
       });
 
-      setMessage({ type: 'success', text: 'Email đã được gửi thành công!' });
+      setMessage({ type: 'success', text: 'Đã gửi hành trình tới hộp thư người nhận. Kiểm tra email của bạn nhé!' });
       setTravelInfo(null);
-      setShowEmailForm(false);
+      setSendEmail(false);
       setEmailData({
         senderEmail: '',
         receiverEmail: '',
-        subject: 'Thông tin du lịch'
+        subject: 'Thông tin du lịch cá nhân hóa'
       });
-    } catch (err) {
-      setMessage({ 
-        type: 'error', 
-        text: err.response?.data?.error || 'Đã xảy ra lỗi khi gửi email.' 
+    } catch (error) {
+      setMessage({
+        type: 'error',
+        text: error.response?.data?.error || 'Không thể gửi email ở thời điểm này. Vui lòng thử lại sau.'
       });
     } finally {
       setLoading(false);
@@ -55,90 +53,81 @@ const EmailForm = ({ threadId, setTravelInfo }) => {
   };
 
   return (
-    <div className="email-form-container">
-      <div className="email-option">
-        <p>Bạn có muốn gửi thông tin này qua email không?</p>
-        <div className="radio-group">
-          <label>
-            <input
-              type="radio"
-              name="sendEmail"
-              value="no"
-              checked={!showEmailForm}
-              onChange={() => setShowEmailForm(false)}
-            />
-            Không
-          </label>
-          <label>
-            <input
-              type="radio"
-              name="sendEmail"
-              value="yes"
-              checked={showEmailForm}
-              onChange={() => setShowEmailForm(true)}
-            />
-            Có
-          </label>
+    <section className="email-wrapper card">
+      <header className="email-header">
+        <div>
+          <span className="email-eyebrow">Chia sẻ hành trình</span>
+          <h3>Gửi kế hoạch này tới hộp thư</h3>
+          <p>
+            Tùy chọn gửi nhanh toàn bộ lịch trình cho bản thân hoặc đồng đội. Email sẽ bao gồm đầy đủ các hạng mục mà AI
+            đã gợi ý cho bạn.
+          </p>
         </div>
-      </div>
 
-      {showEmailForm && (
-        <form onSubmit={handleSubmit} className="email-form">
-          <div className="form-group">
-            <label htmlFor="senderEmail">Email người gửi:</label>
-            <input
-              type="email"
-              id="senderEmail"
-              name="senderEmail"
-              value={emailData.senderEmail}
-              onChange={handleInputChange}
-              required
-              disabled={loading}
-            />
+        <label className="toggle">
+          <input
+            type="checkbox"
+            checked={sendEmail}
+            onChange={() => setSendEmail((prev) => !prev)}
+          />
+          <span className="toggle-slider" />
+          <span className="toggle-label">{sendEmail ? 'Đang bật' : 'Tắt'}</span>
+        </label>
+      </header>
+
+      {sendEmail && (
+        <form className="email-form" onSubmit={handleSubmit}>
+          <div className="form-row">
+            <label className="form-field">
+              <span className="field-label">Email người gửi</span>
+              <input
+                type="email"
+                name="senderEmail"
+                value={emailData.senderEmail}
+                onChange={handleInputChange}
+                placeholder="you@example.com"
+                required
+                disabled={loading}
+              />
+            </label>
+
+            <label className="form-field">
+              <span className="field-label">Email người nhận</span>
+              <input
+                type="email"
+                name="receiverEmail"
+                value={emailData.receiverEmail}
+                onChange={handleInputChange}
+                placeholder="partner@example.com"
+                required
+                disabled={loading}
+              />
+            </label>
           </div>
 
-          <div className="form-group">
-            <label htmlFor="receiverEmail">Email người nhận:</label>
-            <input
-              type="email"
-              id="receiverEmail"
-              name="receiverEmail"
-              value={emailData.receiverEmail}
-              onChange={handleInputChange}
-              required
-              disabled={loading}
-            />
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="subject">Tiêu đề email:</label>
+          <label className="form-field">
+            <span className="field-label">Tiêu đề email</span>
             <input
               type="text"
-              id="subject"
               name="subject"
               value={emailData.subject}
               onChange={handleInputChange}
+              placeholder="Ví dụ: Kế hoạch khám phá Tokyo tháng 12"
               required
               disabled={loading}
             />
-          </div>
+          </label>
 
-          <button 
-            type="submit" 
-            className="send-button"
-            disabled={loading}
-          >
-            {loading ? 'Đang gửi...' : 'Gửi Email'}
-          </button>
+          <div className="email-actions">
+            <button type="submit" className="primary-button" disabled={loading}>
+              {loading ? 'Đang gửi...' : 'Gửi email ngay'}
+            </button>
+          </div>
         </form>
       )}
 
-      {message && (
-        <div className={`message ${message.type}`}>
-          {message.text}
-        </div>
-      )}
-    </div>
+      {message && <div className={`email-alert ${message.type}`}>{message.text}</div>}
+    </section>
   );
 };
 

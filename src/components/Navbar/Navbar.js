@@ -1,183 +1,149 @@
 import React, { useState } from 'react';
+import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import './Navbar.css';
 
-const Navbar = ({ 
-  onShowLocationMap, 
-  onShowSubscription, 
-  onShowAI, 
-  onShowBlog,
-  onShowCreateBlog,
-  currentView 
-}) => {
-  const { user, logout, isAuthenticated } = useAuth();
-  const [showMobileMenu, setShowMobileMenu] = useState(false);
+const Navbar = () => {
+  const {
+    user,
+    logout,
+    isAuthenticated,
+    canUseTrial,
+    isSubscriptionActive
+  } = useAuth();
+  const navigate = useNavigate();
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+
+  const navItems = [
+    { key: 'blog', label: 'Trang chủ', to: '/', requireAuth: false, end: true },
+    { key: 'ai', label: 'AI Du lịch', to: '/ai', requireAuth: true },
+    { key: 'location', label: 'Khám phá', to: '/location', requireAuth: true },
+    { key: 'create-blog', label: 'Viết blog', to: '/blog/create', requireAuth: true }
+  ];
+
+  const handleNavigate = (path) => {
+    if (path) {
+      navigate(path);
+    }
+    setIsMobileOpen(false);
+    setIsUserMenuOpen(false);
+  };
 
   const handleLogout = () => {
     logout();
-    setShowMobileMenu(false);
+    setIsMobileOpen(false);
+    setIsUserMenuOpen(false);
+    navigate('/auth/login');
   };
 
-  const handleNavClick = (action) => {
-    action();
-    setShowMobileMenu(false);
+  const initials = user?.name
+    ? user.name
+        .trim()
+        .split(/\s+/)
+        .map((part) => part[0])
+        .join('')
+        .slice(0, 2)
+        .toUpperCase()
+    : 'VI';
+
+  const subscriptionLabel = () => {
+    if (isSubscriptionActive) {
+      return 'Gói Premium';
+    }
+    if (canUseTrial) {
+      return 'Đang dùng thử';
+    }
+    return 'Chưa đăng ký';
   };
 
   return (
-    <nav className="navbar">
+    <header className="navbar-header">
       <div className="navbar-container">
-        {/* Logo */}
-        <div className="navbar-brand" onClick={() => handleNavClick(onShowBlog)}>
-          <span className="brand-icon">✈️🌍</span>
-          <span className="brand-text">AI Travel Agent</span>
-        </div>
+        <button
+          type="button"
+          className="navbar-logo"
+          onClick={() => handleNavigate('/')}
+        >
+          <span className="logo-dot" />
+          Vivu
+        </button>
 
-        {/* Desktop Menu */}
-        <div className="navbar-menu">
-          <button 
-            className={`nav-item ${currentView === 'blog' ? 'active' : ''}`}
-            onClick={() => handleNavClick(onShowBlog)}
-          >
-            🏠 Trang chủ
-          </button>
-          
-          {isAuthenticated && (
-            <>
-              <button 
-                className={`nav-item ${currentView === 'ai' ? 'active' : ''}`}
-                onClick={() => handleNavClick(onShowAI)}
+        <nav className={`navbar-links ${isMobileOpen ? 'open' : ''}`}>
+          {navItems
+            .filter((item) => !item.requireAuth || isAuthenticated)
+            .map((item) => (
+              <NavLink
+                key={item.key}
+                to={item.to}
+                end={item.end}
+                className={({ isActive }) => `nav-link ${isActive ? 'active' : ''}`}
+                onClick={() => handleNavigate()}
               >
-                🤖 AI Du lịch
-              </button>
-              
-              <button 
-                className={`nav-item ${currentView === 'location' ? 'active' : ''}`}
-                onClick={() => handleNavClick(onShowLocationMap)}
-              >
-                🗺️ Khám phá xung quanh
-              </button>
-              
-              <button 
-                className={`nav-item ${currentView === 'create-blog' ? 'active' : ''}`}
-                onClick={() => handleNavClick(onShowCreateBlog)}
-              >
-                ✍️ Viết blog
-              </button>
-            </>
-          )}
-        </div>
+                {item.label}
+              </NavLink>
+            ))}
+        </nav>
 
-        {/* User Menu */}
-        <div className="navbar-user">
+        <div className="navbar-actions">
           {isAuthenticated ? (
-            <>
-              <div className="user-info">
-                <span className="user-name">Xin chào, {user?.name}!</span>
-                <div className="subscription-status">
-                  {user?.canUseTrial ? (
-                    <span className="trial-badge">🎉 Dùng thử miễn phí</span>
-                  ) : user?.isSubscriptionActive ? (
-                    <span className="active-badge">✅ Premium</span>
-                  ) : (
-                    <span className="inactive-badge">❌ Hết hạn</span>
-                  )}
-                </div>
-              </div>
-              
-              <div className="user-actions">
-                <button 
-                  className="nav-button subscription-btn"
-                  onClick={() => handleNavClick(onShowSubscription)}
+            <div className={`user-menu ${isUserMenuOpen ? 'open' : ''}`}>
+              <button
+                type="button"
+                className="user-trigger"
+                onClick={() => setIsUserMenuOpen((prev) => !prev)}
+              >
+                <span className="user-avatar">{initials}</span>
+                <span className="user-details">
+                  <span className="user-name">{user?.name}</span>
+                  <span className="user-status">{subscriptionLabel()}</span>
+                </span>
+                <span className="chevron" aria-hidden="true">
+                  {isUserMenuOpen ? '▴' : '▾'}
+                </span>
+              </button>
+              <div className="user-dropdown">
+                <button
+                  type="button"
+                  className="dropdown-item"
+                  onClick={() => handleNavigate('/subscription')}
                 >
-                  💳 Subscription
+                  Quản lý gói dịch vụ
                 </button>
-                <button 
-                  className="nav-button logout-btn"
+                <button
+                  type="button"
+                  className="dropdown-item logout"
                   onClick={handleLogout}
                 >
-                  🚪 Đăng xuất
+                  Đăng xuất
                 </button>
               </div>
-            </>
+            </div>
           ) : (
-            <button 
-              className="nav-button login-btn"
-              onClick={() => handleNavClick(onShowAI)}
-            >
-              🔑 Đăng nhập
-            </button>
+            <div className="auth-actions">
+              <button
+                type="button"
+                className="nav-link cta"
+                onClick={() => handleNavigate('/auth/login')}
+              >
+                Đăng nhập
+              </button>
+            </div>
           )}
-        </div>
 
-        {/* Mobile Menu Button */}
-        <button 
-          className="mobile-menu-btn"
-          onClick={() => setShowMobileMenu(!showMobileMenu)}
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-      </div>
-
-      {/* Mobile Menu */}
-      {showMobileMenu && (
-        <div className="mobile-menu">
-          <button 
-            className={`mobile-nav-item ${currentView === 'blog' ? 'active' : ''}`}
-            onClick={() => handleNavClick(onShowBlog)}
+          <button
+            type="button"
+            className={`menu-toggle ${isMobileOpen ? 'open' : ''}`}
+            onClick={() => setIsMobileOpen((prev) => !prev)}
+            aria-label="Toggle navigation menu"
           >
-            🏠 Trang chủ
+            <span />
+            <span />
+            <span />
           </button>
-          
-          {isAuthenticated ? (
-            <>
-              <button 
-                className={`mobile-nav-item ${currentView === 'ai' ? 'active' : ''}`}
-                onClick={() => handleNavClick(onShowAI)}
-              >
-                🤖 AI Du lịch
-              </button>
-              
-              <button 
-                className={`mobile-nav-item ${currentView === 'location' ? 'active' : ''}`}
-                onClick={() => handleNavClick(onShowLocationMap)}
-              >
-                🗺️ Khám phá xung quanh
-              </button>
-              
-              <button 
-                className={`mobile-nav-item ${currentView === 'create-blog' ? 'active' : ''}`}
-                onClick={() => handleNavClick(onShowCreateBlog)}
-              >
-                ✍️ Viết blog
-              </button>
-              
-              <button 
-                className="mobile-nav-item"
-                onClick={() => handleNavClick(onShowSubscription)}
-              >
-                💳 Subscription
-              </button>
-              
-              <button 
-                className="mobile-nav-item logout"
-                onClick={handleLogout}
-              >
-                🚪 Đăng xuất
-              </button>
-            </>
-          ) : (
-            <button 
-              className="mobile-nav-item"
-              onClick={() => handleNavClick(onShowAI)}
-            >
-              🔑 Đăng nhập
-            </button>
-          )}
         </div>
-      )}
-    </nav>
+      </div>
+    </header>
   );
 };
 

@@ -10,32 +10,118 @@ class TravelAgent {
     this.flightsFinder = new FlightsFinder();
     this.hotelsFinder = new HotelsFinder();
     
-    this.systemPrompt = `You are a smart travel agency AI assistant. Your task is to help users find travel information including flights and hotels.
+    this.systemPrompt = `You are a smart travel agency AI assistant. Your task is to help users find travel information including flights, hotels, and local restaurants/eateries.
 
 INSTRUCTIONS:
 - You are allowed to make multiple searches (either together or in sequence)
+- If the user asks for suggestions nearby, you can ask for their current location to provide better recommendations.
+- Based on the user's current location or their travel destination, suggest popular restaurants and eateries.
 - Only look up information when you are sure of what you want
 - The current year is ${new Date().getFullYear()}
-- Always include links to hotels websites and flights websites when possible
-- Include logos of hotels and airline companies when available
+- Always include links to hotels websites, flights websites, and restaurant websites/menus when possible.
+- Include logos of hotels, airline companies, and photos of restaurants/food when available.
 - Always include prices in the local currency and USD when possible
 - Format your response in clean HTML for better presentation
 
 PRICING FORMAT EXAMPLE:
 For hotels: Rate: $581 per night, Total: $3,488
 For flights: Price: $850 USD
+For restaurants: Price range: $10 - $50
 
 RESPONSE FORMAT:
 - Use proper HTML structure with headings, lists, and styling
-- Include images for airline logos and hotel photos
-- Provide clickable links for booking
+- Include images for airline logos, hotel photos, and restaurant/food photos
+- Provide clickable links for booking or viewing menus
 - Show clear pricing information
 - Use Vietnamese language for user-facing content
 
-Remember to be helpful, accurate, and provide comprehensive travel information.`;
+Remember to be helpful, accurate, and provide comprehensive travel and dining information.`;
   }
 
-  async processQuery(query, threadId) {
+  buildTravelDetailsFromMetadata(metadata = {}) {
+    const sanitizeString = (value) => (typeof value === 'string' ? value.trim() : '');
+    const details = {};
+
+    const origin = sanitizeString(metadata.origin);
+    if (origin) {
+      details.origin = origin;
+    }
+
+    const destination = sanitizeString(metadata.destination);
+    if (destination) {
+      details.destination = destination;
+    }
+
+    const startDate = sanitizeString(metadata.startDate);
+    if (startDate) {
+      details.departureDate = startDate;
+    }
+
+    const endDate = sanitizeString(metadata.endDate);
+    if (endDate) {
+      details.returnDate = endDate;
+    }
+
+    const passengers = Number(metadata.travelers);
+    if (Number.isFinite(passengers) && passengers > 0) {
+      details.passengers = passengers;
+    }
+
+    const preferences = {};
+    const travelStyle = sanitizeString(metadata.travelStyle);
+    if (travelStyle) {
+      preferences.travelStyle = travelStyle;
+    }
+
+    const budgetLevel = sanitizeString(metadata.budgetLevel);
+    if (budgetLevel) {
+      preferences.budgetLevel = budgetLevel;
+    }
+
+    const pace = sanitizeString(metadata.pace);
+    if (pace) {
+      preferences.pace = pace;
+    }
+
+    const transportMode = sanitizeString(metadata.transportMode);
+    if (transportMode) {
+      preferences.transportMode = transportMode;
+    }
+
+    if (Array.isArray(metadata.interests) && metadata.interests.length > 0) {
+      preferences.interests = metadata.interests;
+    }
+
+    const notes = sanitizeString(metadata.notes);
+    if (notes) {
+      preferences.notes = notes;
+    }
+
+    if (Object.keys(preferences).length > 0) {
+      details.preferences = preferences;
+    }
+
+    return details;
+  }
+
+  mergeTravelDetails(analysisDetails = {}, metadataDetails = {}, query) {
+    const merged = {
+      ...analysisDetails,
+      ...metadataDetails,
+      rawQuery: query
+    };
+
+    if (analysisDetails.preferences || metadataDetails.preferences) {
+      merged.preferences = {
+        ...(analysisDetails.preferences || {}),
+        ...(metadataDetails.preferences || {})
+      };
+    }
+
+    return merged;
+  }
+
+  async processQuery(query, threadId, metadata = {}) {
     try {
       // First, analyze the query to extract travel details
       const analysisPrompt = `Analyze the following travel query and extract key information. Return ONLY a JSON object with the following structure:
@@ -65,19 +151,24 @@ Travel query: ${query}`;
         }
       } catch (e) {
         // If JSON parsing fails, use default structure
-        travelDetails = { rawQuery: query };
+        travelDetails = {};
       }
+
+      const metadataDetails = this.buildTravelDetailsFromMetadata(metadata);
+      const mergedTravelDetails = this.mergeTravelDetails(travelDetails, metadataDetails, query);
 
       // Search for flights and hotels
       const [flightResults, hotelResults] = await Promise.all([
-        this.searchFlights(travelDetails),
-        this.searchHotels(travelDetails)
+        this.searchFlights(mergedTravelDetails),
+        this.searchHotels(mergedTravelDetails)
       ]);
 
       // Generate final response with Gemini
       const finalPrompt = `${this.systemPrompt}
 
 Original user query: ${query}
+
+Structured travel details (combined from client metadata and AI analysis): ${JSON.stringify(mergedTravelDetails, null, 2)}
 
 Flight search results: ${JSON.stringify(flightResults, null, 2)}
 

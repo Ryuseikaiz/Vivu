@@ -1,35 +1,40 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import './BlogDetail.css';
 
-const BlogDetail = ({ post, onBack, onEdit }) => {
+const BlogDetail = () => {
+  const { postId } = useParams();
+  const navigate = useNavigate();
   const { user, isAuthenticated } = useAuth();
-  const [blogPost, setBlogPost] = useState(post);
-  const [loading, setLoading] = useState(false);
+  const [blogPost, setBlogPost] = useState(null);
+  const [loading, setLoading] = useState(true);
   const [newComment, setNewComment] = useState('');
   const [commentLoading, setCommentLoading] = useState(false);
-  const [message, setMessage] = useState('');
+  const [message, setMessage] = useState(null);
 
   useEffect(() => {
-    if (post && post._id) {
-      fetchPostDetails();
+    if (postId) {
+      fetchPostDetails(postId);
     }
-  }, [post]);
+  }, [postId]);
 
-  const fetchPostDetails = async () => {
+  const fetchPostDetails = async (id) => {
     try {
       setLoading(true);
-      const response = await axios.get(`/api/blog/${post._id}`);
+      const response = await axios.get(`/api/blog/${id}`);
       setBlogPost(response.data.post);
     } catch (error) {
       console.error('Error fetching post details:', error);
+      setMessage({ type: 'error', text: 'Không thể tải bài viết.' });
     } finally {
       setLoading(false);
     }
   };
 
   const handleLike = async () => {
+    if (!blogPost) return;
     if (!isAuthenticated) {
       setMessage({ type: 'error', text: 'Vui lòng đăng nhập để thích bài viết' });
       return;
@@ -57,6 +62,7 @@ const BlogDetail = ({ post, onBack, onEdit }) => {
 
   const handleAddComment = async (e) => {
     e.preventDefault();
+    if (!blogPost) return;
     
     if (!isAuthenticated) {
       setMessage({ type: 'error', text: 'Vui lòng đăng nhập để bình luận' });
@@ -112,7 +118,6 @@ const BlogDetail = ({ post, onBack, onEdit }) => {
   };
 
   const isLiked = blogPost?.likes?.some(like => like.user === user?._id);
-  const canEdit = isAuthenticated && user?._id === blogPost?.author?._id;
 
   if (loading) {
     return (
@@ -137,15 +142,9 @@ const BlogDetail = ({ post, onBack, onEdit }) => {
     <div className="blog-detail-container">
       {/* Header */}
       <div className="blog-detail-header">
-        <button onClick={onBack} className="back-btn">
+        <button onClick={() => navigate(-1)} className="back-btn">
           ← Quay lại
         </button>
-        
-        {canEdit && (
-          <button onClick={() => onEdit(blogPost)} className="edit-btn">
-            ✏️ Chỉnh sửa
-          </button>
-        )}
       </div>
 
       {/* Main Content */}

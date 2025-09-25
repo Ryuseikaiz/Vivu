@@ -3,24 +3,332 @@ const axios = require('axios');
 const { auth } = require('../middleware/auth');
 
 const router = express.Router();
+const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 
-// Get nearby places using Google Places API (displayed on OpenStreetMap)
+// Get nearby places using Google Places API
 router.post('/nearby', auth, async (req, res) => {
   try {
-    const { location, category, radius = 2000 } = req.body;
-    
+    const { location, category, radius = 5000 } = req.body;
+
     if (!location || !location.lat || !location.lng) {
       return res.status(400).json({ error: 'Location coordinates required' });
     }
 
-    // Always use OpenStreetMap - no Google API needed
-    console.log('Using OpenStreetMap for nearby places search');
-    return await useOpenStreetMapFallback(location, category, radius, res);
+    if (!GOOGLE_MAPS_API_KEY) {
+      console.warn('GOOGLE_MAPS_API_KEY is not set. Falling back to mock data.');
+      return res.json({ places: getMockPlaces(category) });
+    }
 
-    // Removed Google Places API code - using OpenStreetMap only
+    const response = await axios.get('https://maps.googleapis.com/maps/api/place/nearbysearch/json', {
+      params: {
+        location: `${location.lat},${location.lng}`,
+        radius: radius,
+        type: category,
+        key: GOOGLE_MAPS_API_KEY,
+        language: 'vi'
+      }
+    });
+
+    if (response.data.status === 'OK') {
+      const places = response.data.results.map(place => ({
+        ...place,
+        source: 'Google'
+      }));
+      res.json({ places });
+    } else {
+      console.error('Google Places API Error:', response.data.status, response.data.error_message);
+      res.status(500).json({ error: 'Failed to fetch nearby places from Google', details: response.data.status });
+    }
   } catch (error) {
-    console.error('Error fetching nearby places:', error);
-    res.json({ places: getMockPlaces(category) });
+    console.error('Error fetching nearby places:', error.message);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+router.post('/reverse-geocode', auth, async (req, res) => {
+  try {
+    const { lat, lng } = req.body;
+    const latitude = Number(lat);
+    const longitude = Number(lng);
+
+    if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) {
+      return res.status(400).json({ error: 'Tọa độ không hợp lệ' });
+    }
+
+    if (GOOGLE_MAPS_API_KEY) {
+      try {
+        const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+          params: {
+            latlng: `${latitude},${longitude}`,
+            key: GOOGLE_MAPS_API_KEY,
+            language: 'vi'
+          },
+          timeout: 7000
+        });
+
+        if (response.data.status === 'OK' && response.data.results.length > 0) {
+          const bestMatch = response.data.results[0];
+          return res.json({
+            address: bestMatch.formatted_address,
+            components: extractAddressComponents(bestMatch.address_components),
+            source: 'Google'
+          });
+        }
+
+        console.warn('Google reverse geocode status:', response.data.status, response.data.error_message);
+      } catch (googleError) {
+        console.error('Google reverse geocode error:', googleError.message);
+      }
+    }
+
+    try {
+      const response = await axios.get('https://nominatim.openstreetmap.org/reverse', {
+        params: {
+          lat: latitude,
+          lon: longitude,
+          format: 'jsonv2',
+          'accept-language': 'vi'
+        },
+        headers: {
+          'User-Agent': 'VivuTravelApp/1.0 (support@vivutravel.local)'
+        },
+        timeout: 7000
+      });
+
+      if (response.data) {
+        const { display_name, address = {} } = response.data;
+        return res.json({
+          address: display_name,
+          components: {
+            city: address.city || address.town || address.village || address.state,
+            district: address.district || address.county || address.state_district,
+            country: address.country
+          },
+          source: 'OpenStreetMap'
+        });
+      }
+    } catch (osmError) {
+      console.error('OpenStreetMap reverse geocode error:', osmError.message);
+    }
+
+    return res.status(404).json({ error: 'Không tìm thấy địa chỉ phù hợp cho vị trí này.' });
+  } catch (error) {
+    console.error('Reverse geocoding error:', error.message);
+    res.status(500).json({ error: 'Không thể xác định địa chỉ từ vị trí hiện tại.' });
+  }
+});
+
+router.post('/geocode', auth, async (req, res) => {
+  try {
+    const rawQuery = typeof req.body.query === 'string' ? req.body.query.trim() : '';
+    const placeId = typeof req.body.placeId === 'string' ? req.body.placeId.trim() : '';
+    const addressHint = typeof req.body.address === 'string' ? req.body.address.trim() : '';
+    const explicitLocation = req.body.location;
+
+    if (!rawQuery && !placeId && !explicitLocation) {
+      return res.status(400).json({ error: 'Vui lòng nhập địa điểm bạn muốn khám phá.' });
+    }
+
+    if (explicitLocation && Number.isFinite(explicitLocation.lat) && Number.isFinite(explicitLocation.lng)) {
+      return res.json({
+        location: {
+          lat: Number(explicitLocation.lat),
+          lng: Number(explicitLocation.lng)
+        },
+        address: addressHint || rawQuery,
+        components: req.body.components || null,
+        source: req.body.source || 'Manual'
+      });
+    }
+
+    if (placeId && GOOGLE_MAPS_API_KEY) {
+      try {
+        const response = await axios.get('https://maps.googleapis.com/maps/api/place/details/json', {
+          params: {
+            place_id: placeId,
+            key: GOOGLE_MAPS_API_KEY,
+            language: 'vi',
+            fields: 'geometry/location,formatted_address,address_component'
+          },
+          timeout: 7000
+        });
+
+        if (response.data.status === 'OK' && response.data.result) {
+          const { geometry, formatted_address: formattedAddress, address_components: addressComponents } = response.data.result;
+          const lat = geometry?.location?.lat;
+          const lng = geometry?.location?.lng;
+
+          if (Number.isFinite(lat) && Number.isFinite(lng)) {
+            return res.json({
+              location: { lat, lng },
+              address: formattedAddress,
+              components: extractAddressComponents(addressComponents),
+              source: 'Google'
+            });
+          }
+        }
+
+        console.warn('Google place details status:', response.data.status, response.data.error_message);
+      } catch (googleError) {
+        console.error('Google place details error:', googleError.message);
+      }
+    }
+
+    if (GOOGLE_MAPS_API_KEY && rawQuery) {
+      try {
+        const response = await axios.get('https://maps.googleapis.com/maps/api/geocode/json', {
+          params: {
+            address: rawQuery,
+            key: GOOGLE_MAPS_API_KEY,
+            language: 'vi'
+          },
+          timeout: 7000
+        });
+
+        if (response.data.status === 'OK' && response.data.results.length > 0) {
+          const bestMatch = response.data.results[0];
+          const { lat, lng } = bestMatch.geometry.location || {};
+
+          if (Number.isFinite(lat) && Number.isFinite(lng)) {
+            return res.json({
+              location: { lat, lng },
+              address: bestMatch.formatted_address,
+              components: extractAddressComponents(bestMatch.address_components),
+              source: 'Google'
+            });
+          }
+        }
+
+        console.warn('Google geocode status:', response.data.status, response.data.error_message);
+      } catch (googleError) {
+        console.error('Google geocode error:', googleError.message);
+      }
+    }
+
+    if (rawQuery) {
+      try {
+        const response = await axios.get('https://nominatim.openstreetmap.org/search', {
+          params: {
+            q: rawQuery,
+            format: 'jsonv2',
+            addressdetails: 1,
+            limit: 1,
+            countrycodes: req.body.country || 'vn',
+            'accept-language': 'vi'
+          },
+          headers: {
+            'User-Agent': 'VivuTravelApp/1.0 (support@vivutravel.local)'
+          },
+          timeout: 7000
+        });
+
+        if (response.data && Array.isArray(response.data) && response.data.length > 0) {
+          const bestMatch = response.data[0];
+          const lat = Number(bestMatch.lat);
+          const lng = Number(bestMatch.lon);
+
+          if (Number.isFinite(lat) && Number.isFinite(lng)) {
+            return res.json({
+              location: { lat, lng },
+              address: bestMatch.display_name,
+              components: extractComponentsFromOsm(bestMatch.address),
+              source: 'OpenStreetMap'
+            });
+          }
+        }
+      } catch (osmError) {
+        console.error('OpenStreetMap geocode error:', osmError.message);
+      }
+    }
+
+    return res.status(404).json({ error: 'Không tìm thấy địa điểm phù hợp. Hãy thử tên khác.' });
+  } catch (error) {
+    console.error('Geocoding error:', error.message);
+    res.status(500).json({ error: 'Không thể xác định tọa độ cho địa điểm này.' });
+  }
+});
+
+router.post('/autocomplete', auth, async (req, res) => {
+  try {
+    const query = typeof req.body.query === 'string' ? req.body.query.trim() : '';
+    const limit = Math.min(Number(req.body.limit) || 6, 10);
+
+    if (query.length < 2) {
+      return res.json({ suggestions: [] });
+    }
+
+    if (GOOGLE_MAPS_API_KEY) {
+      try {
+        const response = await axios.get('https://maps.googleapis.com/maps/api/place/autocomplete/json', {
+          params: {
+            input: query,
+            key: GOOGLE_MAPS_API_KEY,
+            language: 'vi',
+            components: req.body.country ? `country:${req.body.country}` : 'country:vn',
+            sessiontoken: req.body.sessionToken || undefined,
+            types: 'geocode'
+          },
+          timeout: 7000
+        });
+
+        if (response.data.status === 'OK' && Array.isArray(response.data.predictions)) {
+          const suggestions = response.data.predictions.slice(0, limit).map((prediction) => ({
+            id: prediction.place_id,
+            placeId: prediction.place_id,
+            label: prediction.structured_formatting?.main_text || prediction.description,
+            description: prediction.description,
+            secondaryText: prediction.structured_formatting?.secondary_text || '',
+            source: 'Google'
+          }));
+
+          return res.json({ suggestions });
+        }
+
+        console.warn('Google autocomplete status:', response.data.status, response.data.error_message);
+      } catch (googleError) {
+        console.error('Google autocomplete error:', googleError.message);
+      }
+    }
+
+    try {
+      const response = await axios.get('https://nominatim.openstreetmap.org/search', {
+        params: {
+          q: query,
+          format: 'jsonv2',
+          addressdetails: 1,
+          limit,
+          countrycodes: req.body.country || 'vn',
+          'accept-language': 'vi'
+        },
+        headers: {
+          'User-Agent': 'VivuTravelApp/1.0 (support@vivutravel.local)'
+        },
+        timeout: 7000
+      });
+
+      if (Array.isArray(response.data)) {
+        const suggestions = response.data.map((item) => ({
+          id: item.place_id?.toString() || item.osm_id?.toString(),
+          label: item.display_name,
+          description: item.display_name,
+          location: {
+            lat: Number(item.lat),
+            lng: Number(item.lon)
+          },
+          components: extractComponentsFromOsm(item.address),
+          source: 'OpenStreetMap'
+        }));
+
+        return res.json({ suggestions });
+      }
+    } catch (osmError) {
+      console.error('OpenStreetMap autocomplete error:', osmError.message);
+    }
+
+    res.json({ suggestions: [] });
+  } catch (error) {
+    console.error('Autocomplete error:', error.message);
+    res.status(500).json({ error: 'Không thể gợi ý địa điểm lúc này.' });
   }
 });
 
@@ -88,58 +396,47 @@ async function useOpenStreetMapFallback(location, category, radius, res) {
   }
 }
 
-// Get place details using Google Places API or Nominatim fallback
+// Get place details using Google Places API
 router.get('/place/:placeId', auth, async (req, res) => {
   try {
     const { placeId } = req.params;
-    
-    // Use OpenStreetMap only - no Google API
 
-    // Fallback to Nominatim for OpenStreetMap IDs
-    try {
-      const response = await axios.get(`https://nominatim.openstreetmap.org/lookup`, {
-        params: {
-          osm_ids: `N${placeId}`,
-          format: 'json',
-          addressdetails: 1,
-          extratags: 1,
-          namedetails: 1
-        },
-        headers: {
-          'User-Agent': 'AI-Travel-Agent/1.0'
-        }
-      });
+    if (!GOOGLE_MAPS_API_KEY) {
+      console.warn('GOOGLE_MAPS_API_KEY is not set. Falling back to mock data.');
+      return res.json({ place: getMockPlaceDetails(placeId) });
+    }
 
-      if (response.data && response.data.length > 0) {
-        const place = response.data[0];
-        res.json({
-          place: {
-            place_id: placeId,
-            name: place.display_name.split(',')[0],
-            formatted_address: place.display_name,
-            rating: Math.random() * 2 + 3,
-            opening_hours: place.extratags?.opening_hours,
-            website: place.extratags?.website,
-            phone: place.extratags?.phone,
-            source: 'OpenStreetMap'
-          }
-        });
-      } else {
-        res.json({ place: getMockPlaceDetails(placeId) });
+    const response = await axios.get('https://maps.googleapis.com/maps/api/place/details/json', {
+      params: {
+        place_id: placeId,
+        key: GOOGLE_MAPS_API_KEY,
+        language: 'vi',
+        fields: 'name,formatted_address,rating,opening_hours,website,formatted_phone_number'
       }
-    } catch (nominatimError) {
-      console.error('Nominatim API error:', nominatimError.message);
-      res.json({ place: getMockPlaceDetails(placeId) });
+    });
+
+    if (response.data.status === 'OK') {
+      res.json({ place: { ...response.data.result, source: 'Google' } });
+    } else {
+      res.status(404).json({ error: 'Place not found', details: response.data.status });
     }
   } catch (error) {
     console.error('Error fetching place details:', error);
-    res.json({ place: getMockPlaceDetails(req.params.placeId) });
+    res.status(500).json({ error: 'Failed to fetch place details' });
   }
 });
 
-// Placeholder for photos (OpenStreetMap doesn't have photos)
+// Get photo from Google Places API
 router.get('/photo/:photoReference', (req, res) => {
-  res.redirect('https://via.placeholder.com/400x300?text=Không+có+ảnh');
+  const { photoReference } = req.params;
+  const maxWidth = req.query.maxwidth || 400;
+
+  if (!GOOGLE_MAPS_API_KEY) {
+    return res.redirect(`https://via.placeholder.com/${maxWidth}x300?text=No+API+Key`);
+  }
+
+  const url = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=${maxWidth}&photoreference=${photoReference}&key=${GOOGLE_MAPS_API_KEY}`;
+  res.redirect(url);
 });
 
 // Mock data for when API key is not available
@@ -265,6 +562,36 @@ function getMockPlaceDetails(placeId) {
         'Chủ nhật: 08:00–22:00'
       ]
     }
+  };
+}
+
+function extractAddressComponents(components = []) {
+  const result = {
+    city: null,
+    district: null,
+    country: null
+  };
+
+  components.forEach((component) => {
+    if (component.types.includes('locality') || component.types.includes('administrative_area_level_2')) {
+      result.city = result.city || component.long_name;
+    }
+    if (component.types.includes('sublocality') || component.types.includes('administrative_area_level_3')) {
+      result.district = result.district || component.long_name;
+    }
+    if (component.types.includes('country')) {
+      result.country = component.long_name;
+    }
+  });
+
+  return result;
+}
+
+function extractComponentsFromOsm(address = {}) {
+  return {
+    city: address.city || address.town || address.village || address.state,
+    district: address.district || address.county || address.state_district,
+    country: address.country
   };
 }
 

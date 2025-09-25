@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import BlogDetail from './BlogDetail';
 import './BlogList.css';
 
-const BlogList = ({ onSelectPost }) => {
-  const [selectedPost, setSelectedPost] = useState(null);
+const BlogList = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -18,6 +17,7 @@ const BlogList = ({ onSelectPost }) => {
     pages: 1,
     total: 0
   });
+  const navigate = useNavigate();
 
   useEffect(() => {
     fetchPosts();
@@ -47,20 +47,6 @@ const BlogList = ({ onSelectPost }) => {
     setFilters(prev => ({ ...prev, [key]: value }));
     setPagination(prev => ({ ...prev, current: 1 }));
   };
-
-  // If a post is selected, show detail view
-  if (selectedPost) {
-    return (
-      <BlogDetail 
-        post={selectedPost}
-        onBack={() => setSelectedPost(null)}
-        onEdit={(post) => {
-          // Handle edit functionality
-          console.log('Edit post:', post);
-        }}
-      />
-    );
-  }
 
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('vi-VN', {
@@ -182,7 +168,7 @@ const BlogList = ({ onSelectPost }) => {
               
               <button
                 className="read-more-btn"
-                onClick={() => setSelectedPost(post)}
+                onClick={() => navigate(`/blog/${post._id}`)}
               >
                 Đọc tiếp →
               </button>

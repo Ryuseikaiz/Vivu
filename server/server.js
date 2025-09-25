@@ -77,7 +77,7 @@ app.use('/api/blog', blogRoutes);
 // Protected travel routes
 app.post('/api/travel/search', searchLimiter, auth, checkSubscription, async (req, res) => {
   try {
-    const { query } = req.body;
+    const { query, metadata = {} } = req.body;
     const user = req.user;
     
     if (!query || !query.trim()) {
@@ -98,11 +98,12 @@ app.post('/api/travel/search', searchLimiter, auth, checkSubscription, async (re
     }
     
     // Process travel query using AI agent
-    const travelInfo = await travelAgent.processQuery(query, threadId);
+    const travelInfo = await travelAgent.processQuery(query, threadId, metadata);
     
     // Store session data
     sessions.set(threadId, {
       query,
+      metadata,
       travelInfo,
       timestamp: new Date(),
       userId: user._id
