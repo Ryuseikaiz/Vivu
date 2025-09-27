@@ -5,37 +5,30 @@ const HotelsFinder = require('./HotelsFinder');
 class TravelAgent {
   constructor() {
     this.genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-    this.model = this.genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
+    
+    const modelNames = ['gemini-2.5-pro'];
+    
+    let modelInitialized = false;
+    for (const modelName of modelNames) {
+      try {
+        this.model = this.genAI.getGenerativeModel({ model: modelName });
+        console.log(`Successfully initialized with model: ${modelName}`);
+        modelInitialized = true;
+        break;
+      } catch (error) {
+        console.log(`Failed to initialize model ${modelName}:`, error.message);
+      }
+    }
+    
+    if (!modelInitialized) {
+      console.error('Failed to initialize any AI model - will use fallback responses');
+      this.model = null;
+    }
     
     this.flightsFinder = new FlightsFinder();
     this.hotelsFinder = new HotelsFinder();
     
-    this.systemPrompt = `You are a smart travel agency AI assistant. Your task is to help users find travel information including flights, hotels, and local restaurants/eateries.
-
-INSTRUCTIONS:
-- You are allowed to make multiple searches (either together or in sequence)
-- If the user asks for suggestions nearby, you can ask for their current location to provide better recommendations.
-- Based on the user's current location or their travel destination, suggest popular restaurants and eateries.
-- Only look up information when you are sure of what you want
-- The current year is ${new Date().getFullYear()}
-- Always include links to hotels websites, flights websites, and restaurant websites/menus when possible.
-- Include logos of hotels, airline companies, and photos of restaurants/food when available.
-- Always include prices in the local currency and USD when possible
-- Format your response in clean HTML for better presentation
-
-PRICING FORMAT EXAMPLE:
-For hotels: Rate: $581 per night, Total: $3,488
-For flights: Price: $850 USD
-For restaurants: Price range: $10 - $50
-
-RESPONSE FORMAT:
-- Use proper HTML structure with headings, lists, and styling
-- Include images for airline logos, hotel photos, and restaurant/food photos
-- Provide clickable links for booking or viewing menus
-- Show clear pricing information
-- Use Vietnamese language for user-facing content
-
-Remember to be helpful, accurate, and provide comprehensive travel and dining information.`;
+    this.systemPrompt = `Bạn là trợ lý du lịch AI thông minh. Tạo lịch trình du lịch chi tiết bằng tiếng Việt với HTML format đẹp.`;
   }
 
   buildTravelDetailsFromMetadata(metadata = {}) {
@@ -43,153 +36,23 @@ Remember to be helpful, accurate, and provide comprehensive travel and dining in
     const details = {};
 
     const origin = sanitizeString(metadata.origin);
-    if (origin) {
-      details.origin = origin;
-    }
+    if (origin) details.origin = origin;
 
     const destination = sanitizeString(metadata.destination);
-    if (destination) {
-      details.destination = destination;
-    }
+    if (destination) details.destination = destination;
 
     const startDate = sanitizeString(metadata.startDate);
-    if (startDate) {
-      details.departureDate = startDate;
-    }
+    if (startDate) details.departureDate = startDate;
 
     const endDate = sanitizeString(metadata.endDate);
-    if (endDate) {
-      details.returnDate = endDate;
-    }
+    if (endDate) details.returnDate = endDate;
 
     const passengers = Number(metadata.travelers);
     if (Number.isFinite(passengers) && passengers > 0) {
       details.passengers = passengers;
     }
 
-    const preferences = {};
-    const travelStyle = sanitizeString(metadata.travelStyle);
-    if (travelStyle) {
-      preferences.travelStyle = travelStyle;
-    }
-
-    const budgetLevel = sanitizeString(metadata.budgetLevel);
-    if (budgetLevel) {
-      preferences.budgetLevel = budgetLevel;
-    }
-
-    const pace = sanitizeString(metadata.pace);
-    if (pace) {
-      preferences.pace = pace;
-    }
-
-    const transportMode = sanitizeString(metadata.transportMode);
-    if (transportMode) {
-      preferences.transportMode = transportMode;
-    }
-
-    if (Array.isArray(metadata.interests) && metadata.interests.length > 0) {
-      preferences.interests = metadata.interests;
-    }
-
-    const notes = sanitizeString(metadata.notes);
-    if (notes) {
-      preferences.notes = notes;
-    }
-
-    if (Object.keys(preferences).length > 0) {
-      details.preferences = preferences;
-    }
-
     return details;
-  }
-
-  mergeTravelDetails(analysisDetails = {}, metadataDetails = {}, query) {
-    const merged = {
-      ...analysisDetails,
-      ...metadataDetails,
-      rawQuery: query
-    };
-
-    if (analysisDetails.preferences || metadataDetails.preferences) {
-      merged.preferences = {
-        ...(analysisDetails.preferences || {}),
-        ...(metadataDetails.preferences || {})
-      };
-    }
-
-    return merged;
-  }
-
-  async processQuery(query, threadId, metadata = {}) {
-    try {
-      // First, analyze the query to extract travel details
-      const analysisPrompt = `Analyze the following travel query and extract key information. Return ONLY a JSON object with the following structure:
-{
-  "origin": "origin city/airport code",
-  "destination": "destination city/airport code",
-  "departureDate": "YYYY-MM-DD",
-  "returnDate": "YYYY-MM-DD",
-  "passengers": number,
-  "hotelPreferences": "star rating or preferences",
-  "rawQuery": "original query"
-}
-
-Travel query: ${query}`;
-
-      const analysisResult = await this.model.generateContent(analysisPrompt);
-      const analysisText = analysisResult.response.text();
-
-      let travelDetails;
-      try {
-        // Try to extract JSON from the response
-        const jsonMatch = analysisText.match(/\{[\s\S]*\}/);
-        if (jsonMatch) {
-          travelDetails = JSON.parse(jsonMatch[0]);
-        } else {
-          throw new Error('No JSON found');
-        }
-      } catch (e) {
-        // If JSON parsing fails, use default structure
-        travelDetails = {};
-      }
-
-      const metadataDetails = this.buildTravelDetailsFromMetadata(metadata);
-      const mergedTravelDetails = this.mergeTravelDetails(travelDetails, metadataDetails, query);
-
-      // Search for flights and hotels
-      const [flightResults, hotelResults] = await Promise.all([
-        this.searchFlights(mergedTravelDetails),
-        this.searchHotels(mergedTravelDetails)
-      ]);
-
-      // Generate final response with Gemini
-      const finalPrompt = `${this.systemPrompt}
-
-Original user query: ${query}
-
-Structured travel details (combined from client metadata and AI analysis): ${JSON.stringify(mergedTravelDetails, null, 2)}
-
-Flight search results: ${JSON.stringify(flightResults, null, 2)}
-
-Hotel search results: ${JSON.stringify(hotelResults, null, 2)}
-
-Please create a comprehensive travel information response in HTML format. Include:
-1. A summary of the user's request
-2. Flight options with prices, airlines, and booking links
-3. Hotel options with prices, ratings, and booking links
-4. All information should be in Vietnamese
-5. Use proper HTML structure with styling
-6. Include images and links where available
-
-Make it visually appealing and informative.`;
-
-      const finalResult = await this.model.generateContent(finalPrompt);
-      return finalResult.response.text();
-    } catch (error) {
-      console.error('Error in TravelAgent.processQuery:', error);
-      throw new Error('Failed to process travel query');
-    }
   }
 
   async searchFlights(travelDetails) {
@@ -197,7 +60,7 @@ Make it visually appealing and informative.`;
       return await this.flightsFinder.search(travelDetails);
     } catch (error) {
       console.error('Error searching flights:', error);
-      return { error: 'Failed to search flights' };
+      return { error: error.message };
     }
   }
 
@@ -206,8 +69,127 @@ Make it visually appealing and informative.`;
       return await this.hotelsFinder.search(travelDetails);
     } catch (error) {
       console.error('Error searching hotels:', error);
-      return { error: 'Failed to search hotels' };
+      return { error: error.message };
     }
+  }
+
+  async processQuery(query, threadId, metadata = {}) {
+    try {
+      console.log('Processing query...');
+      
+      const metadataDetails = this.buildTravelDetailsFromMetadata(metadata);
+      
+      if (!this.model) {
+        console.log('AI model not available - providing fallback response');
+        return this.createFallbackResponse(query, metadataDetails);
+      }
+      
+      // Search for real data
+      let hotelResults = null;
+      try {
+        hotelResults = await this.searchHotels(metadataDetails);
+        console.log('Kết quả khách sạn:', hotelResults ? hotelResults.slice(0, 2) : 'Không có');
+      } catch (error) {
+        console.log('Lỗi tìm khách sạn:', error.message);
+      }
+
+      // Create simple prompt
+      const simplePrompt = `Tạo lịch trình du lịch cho: "${query}"
+
+${hotelResults && hotelResults.length > 0 ? 
+`KHÁCH SẠN GỢI Ý:
+${hotelResults.slice(0, 2).map(h => `- ${h.name}: ${h.rate_per_night || 'N/A'}/đêm, Rating: ${h.rating}/5`).join('\n')}` : ''}
+
+Yêu cầu:
+- Trả lời bằng tiếng Việt
+- Sử dụng HTML format đơn giản
+- Tối đa 500 từ để tránh timeout
+- Bao gồm thông tin khách sạn thực tế nếu có`;
+
+      console.log('Sending simple request to Gemini API...');
+      
+      const result = await Promise.race([
+        this.model.generateContent(simplePrompt, {
+          generationConfig: {
+            maxOutputTokens: 2000,
+            temperature: 0.7
+          }
+        }),
+        new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout after 20 seconds')), 20000)
+        )
+      ]);
+      
+      console.log('Received response from Gemini API');
+      const response = result.response.text();
+      
+      console.log('Response length:', response.length);
+      console.log('Response preview:', response.substring(0, 200));
+      
+      if (!response || response.trim().length === 0) {
+        console.log('Empty response, using fallback');
+        return this.createFallbackResponse(query, metadataDetails);
+      }
+      
+      console.log('✅ Query processed successfully');
+      return response;
+
+    } catch (error) {
+      console.error('Error in TravelAgent.processQuery:', error);
+      
+      if (error.message?.includes('timeout') || error.message?.includes('Timeout')) {
+        return `
+        <div style="padding: 20px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px;">
+          <h3 style="color: #856404;">⏱️ Yêu cầu xử lý quá lâu</h3>
+          <p style="color: #856404;">
+            Xin lỗi, yêu cầu của bạn mất quá nhiều thời gian để xử lý. Vui lòng thử lại với câu hỏi ngắn gọn hơn.
+          </p>
+        </div>
+        `;
+      }
+      
+      if (error.message?.includes('quota') || error.message?.includes('Too Many Requests')) {
+        return `
+        <div style="padding: 20px; background-color: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px;">
+          <h3 style="color: #856404;">🚫 Đã đạt giới hạn API</h3>
+          <p style="color: #856404;">
+            Đã đạt giới hạn API trong ngày. Vui lòng thử lại sau hoặc liên hệ hỗ trợ.
+          </p>
+        </div>
+        `;
+      }
+      
+      return `
+      <div style="padding: 20px; background-color: #f8d7da; border: 1px solid #f5c6cb; border-radius: 8px;">
+        <h3 style="color: #721c24;">⚠️ Lỗi Hệ Thống</h3>
+        <p style="color: #721c24;">
+          Xin lỗi, đã có lỗi xảy ra. Vui lòng thử lại sau.
+        </p>
+        <p style="color: #721c24; font-size: 14px;">
+          <strong>Lỗi:</strong> ${error.message}
+        </p>
+      </div>
+      `;
+    }
+  }
+
+  createFallbackResponse(query, metadataDetails) {
+    return `
+    <div style="padding: 20px; font-family: Arial, sans-serif;">
+      <h2 style="color: #2c3e50;">🌟 Kế Hoạch Du Lịch</h2>
+      <div style="background: #e3f2fd; padding: 15px; border-radius: 8px; margin: 15px 0;">
+        <h3 style="color: #1565c0;">📍 Yêu cầu của bạn</h3>
+        <p><strong>Truy vấn:</strong> ${query}</p>
+        ${metadataDetails.origin ? `<p><strong>Điểm đi:</strong> ${metadataDetails.origin}</p>` : ''}
+        ${metadataDetails.destination ? `<p><strong>Điểm đến:</strong> ${metadataDetails.destination}</p>` : ''}
+      </div>
+      <div style="background: #fff3e0; padding: 15px; border-radius: 8px;">
+        <p style="color: #ef6c00; margin: 0;">
+          🔧 AI đang được cập nhật. Vui lòng thử lại sau!
+        </p>
+      </div>
+    </div>
+    `;
   }
 }
 

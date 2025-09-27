@@ -96,3 +96,6 @@ class FlightsFinder {
 }
 
 module.exports = FlightsFinder;
+}
+
+module.exports = FlightsFinder;
