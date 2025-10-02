@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
+import ImageUploader from '../ImageUploader/ImageUploader';
 import './CreateBlog.css';
 
 const CreateBlog = ({ onBlogCreated, onCancel }) => {
@@ -83,17 +84,23 @@ const CreateBlog = ({ onBlogCreated, onCancel }) => {
     }
   };
 
-  const handleImageChange = (index, field, value) => {
-    const newImages = [...formData.images];
-    newImages[index] = { ...newImages[index], [field]: value };
-    setFormData(prev => ({ ...prev, images: newImages }));
-  };
+  // Handle image upload from Google Drive
+  const handleImageUploadSuccess = (uploadedImages) => {
+    const imageArray = Array.isArray(uploadedImages) ? uploadedImages : [uploadedImages];
+    
+    const newImages = imageArray.map(img => ({
+      url: img.url,
+      fileId: img.fileId,
+      caption: '',
+      alt: img.fileName || 'Uploaded image'
+    }));
 
-  const addImageField = () => {
     setFormData(prev => ({
       ...prev,
-      images: [...prev.images, { url: '', caption: '', alt: '' }]
+      images: [...prev.images.filter(img => img.url), ...newImages]
     }));
+
+    setMessage({ type: 'success', text: `Đã upload ${newImages.length} ảnh thành công!` });
   };
 
   const removeImageField = (index) => {
@@ -305,70 +312,40 @@ const CreateBlog = ({ onBlogCreated, onCancel }) => {
         {/* Images */}
         <div className="form-section">
           <h3>📸 Hình ảnh</h3>
-          {formData.images.map((image, index) => (
-            <div key={index} className="image-group">
-              <div className="image-header">
-                <span>Hình ảnh {index + 1}</span>
-                {formData.images.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => removeImageField(index)}
-                    className="remove-image-btn"
-                    disabled={loading}
-                  >
-                    ✕
-                  </button>
-                )}
-              </div>
-              
-              <div className="form-group">
-                <label>URL hình ảnh</label>
-                <input
-                  type="url"
-                  value={image.url}
-                  onChange={(e) => handleImageChange(index, 'url', e.target.value)}
-                  placeholder="https://example.com/image.jpg"
-                  disabled={loading}
-                />
-              </div>
-              
-              <div className="form-row">
-                <div className="form-group">
-                  <label>Chú thích</label>
-                  <input
-                    type="text"
-                    value={image.caption}
-                    onChange={(e) => handleImageChange(index, 'caption', e.target.value)}
-                    placeholder="Mô tả hình ảnh"
-                    disabled={loading}
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label>Alt text</label>
-                  <input
-                    type="text"
-                    value={image.alt}
-                    onChange={(e) => handleImageChange(index, 'alt', e.target.value)}
-                    placeholder="Văn bản thay thế"
-                    disabled={loading}
-                  />
-                </div>
+          
+          {/* Google Drive Image Uploader */}
+          <ImageUploader 
+            multiple={true}
+            maxFiles={10}
+            onUploadSuccess={handleImageUploadSuccess}
+          />
+
+          {/* Display uploaded images */}
+          {formData.images.filter(img => img.url).length > 0 && (
+            <div className="uploaded-images-display">
+              <h4>Ảnh đã upload ({formData.images.filter(img => img.url).length})</h4>
+              <div className="images-preview-grid">
+                {formData.images.filter(img => img.url).map((image, index) => (
+                  <div key={index} className="preview-image-card">
+                    <img src={image.url} alt={image.alt || 'Blog image'} />
+                    <button
+                      type="button"
+                      onClick={() => removeImageField(index)}
+                      className="remove-preview-btn"
+                      disabled={loading}
+                      title="Xóa ảnh"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ))}
               </div>
             </div>
-          ))}
-          
-          <button
-            type="button"
-            onClick={addImageField}
-            className="add-image-btn"
-            disabled={loading || formData.images.length >= 10}
-          >
-            + Thêm hình ảnh
-          </button>
+          )}
         </div>
 
-        {/* Location */}
+        {/* Location - HIDDEN (not needed for simple blog) */}
+        {false && (
         <div className="form-section">
           <h3>📍 Vị trí</h3>
           
@@ -463,8 +440,10 @@ const CreateBlog = ({ onBlogCreated, onCancel }) => {
             </button>
           </div>
         </div>
+        )}
 
-        {/* Travel Details */}
+        {/* Travel Details - HIDDEN (not needed for simple blog) */}
+        {false && (
         <div className="form-section">
           <h3>🗓️ Chi tiết chuyến đi</h3>
           
@@ -522,6 +501,7 @@ const CreateBlog = ({ onBlogCreated, onCancel }) => {
             </div>
           </div>
         </div>
+        )}
 
         {message && (
           <div className={`message ${message.type}`}>

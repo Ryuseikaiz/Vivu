@@ -12,13 +12,39 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      required: function() {
+        // Password is required only if not using OAuth
+        return !this.googleId && !this.facebookId;
+      },
       minlength: 6,
     },
     name: {
       type: String,
       required: true,
       trim: true,
+    },
+    // OAuth fields
+    googleId: {
+      type: String,
+      sparse: true,
+      unique: true,
+    },
+    facebookId: {
+      type: String,
+      sparse: true,
+      unique: true,
+    },
+    avatar: {
+      type: String,
+    },
+    authProvider: {
+      type: String,
+      enum: ['local', 'google', 'facebook'],
+      default: 'local',
+    },
+    emailVerified: {
+      type: Boolean,
+      default: false,
     },
     subscription: {
       type: {

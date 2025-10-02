@@ -4,6 +4,8 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
+const session = require('express-session');
+const passport = require('./config/passport');
 const { v4: uuidv4 } = require('uuid');
 
 // Load environment variables
@@ -31,8 +33,26 @@ const searchLimiter = rateLimit({
 });
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: process.env.CLIENT_URL || 'http://localhost:3000',
+  credentials: true
+}));
 app.use(express.json({ limit: '10mb' }));
+
+// Session middleware for passport
+app.use(session({
+  secret: process.env.SESSION_SECRET || process.env.JWT_SECRET || 'your-secret-key',
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Trust proxy for rate limiting
 app.set('trust proxy', 1);
@@ -60,6 +80,7 @@ const authRoutes = require('./routes/auth');
 const paymentRoutes = require('./routes/payment');
 const locationRoutes = require('./routes/location');
 const blogRoutes = require('./routes/blog');
+const uploadRoutes = require('./routes/upload');
 
 // Initialize services
 const travelAgent = new TravelAgent();
@@ -73,6 +94,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/location', locationRoutes);
 app.use('/api/blog', blogRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Protected travel routes
 app.post('/api/travel/search', searchLimiter, auth, checkSubscription, async (req, res) => {

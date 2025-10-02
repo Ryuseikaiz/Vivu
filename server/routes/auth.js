@@ -1,6 +1,7 @@
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const Joi = require('joi');
+const passport = require('passport');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
 
@@ -160,5 +161,93 @@ router.post('/refresh', auth, async (req, res) => {
     res.status(500).json({ error: 'Lỗi server' });
   }
 });
+
+// ============================================
+// GOOGLE OAuth Routes
+// ============================================
+
+/**
+ * @route   GET /api/auth/google
+ * @desc    Initiate Google OAuth flow
+ * @access  Public
+ */
+router.get('/google',
+  passport.authenticate('google', {
+    scope: ['profile', 'email'],
+    session: false
+  })
+);
+
+/**
+ * @route   GET /api/auth/google/callback
+ * @desc    Google OAuth callback
+ * @access  Public
+ */
+router.get('/google/callback',
+  passport.authenticate('google', {
+    session: false,
+    failureRedirect: `${process.env.CLIENT_URL}/login?error=google_auth_failed`
+  }),
+  (req, res) => {
+    try {
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: req.user._id },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      // Redirect to frontend with token
+      res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
+    } catch (error) {
+      console.error('Google callback error:', error);
+      res.redirect(`${process.env.CLIENT_URL}/login?error=auth_error`);
+    }
+  }
+);
+
+// ============================================
+// FACEBOOK OAuth Routes
+// ============================================
+
+/**
+ * @route   GET /api/auth/facebook
+ * @desc    Initiate Facebook OAuth flow
+ * @access  Public
+ */
+router.get('/facebook',
+  passport.authenticate('facebook', {
+    scope: ['email', 'public_profile'],
+    session: false
+  })
+);
+
+/**
+ * @route   GET /api/auth/facebook/callback
+ * @desc    Facebook OAuth callback
+ * @access  Public
+ */
+router.get('/facebook/callback',
+  passport.authenticate('facebook', {
+    session: false,
+    failureRedirect: `${process.env.CLIENT_URL}/login?error=facebook_auth_failed`
+  }),
+  (req, res) => {
+    try {
+      // Generate JWT token
+      const token = jwt.sign(
+        { userId: req.user._id },
+        process.env.JWT_SECRET,
+        { expiresIn: '7d' }
+      );
+
+      // Redirect to frontend with token
+      res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
+    } catch (error) {
+      console.error('Facebook callback error:', error);
+      res.redirect(`${process.env.CLIENT_URL}/login?error=auth_error`);
+    }
+  }
+);
 
 module.exports = router;
