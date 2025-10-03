@@ -152,6 +152,33 @@
   color: #1f2560;
 }
 
+/* Hyperlink Styles */
+.travel-content a {
+  color: #2196f3;
+  text-decoration: none;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border-bottom: 2px solid transparent;
+}
+
+.travel-content a:hover {
+  color: #1976d2;
+  border-bottom: 2px solid #2196f3;
+  transform: translateY(-1px);
+}
+
+.travel-content a:active {
+  transform: translateY(0);
+}
+
+/* Style for links with icons */
+.travel-content a::before {
+  font-size: 0.9em;
+}
+
 @media (max-width: 768px) {
   .travel-results {
     margin: 16px 0 40px;
