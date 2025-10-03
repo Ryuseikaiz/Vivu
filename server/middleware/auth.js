@@ -9,8 +9,9 @@ const auth = async (req, res, next) => {
       return res.status(401).json({ error: 'Access denied. No token provided.' });
     }
 
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(decoded.userId);
+    // Use JWT_ACCESS_SECRET to match the token generation
+    const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
+    const user = await User.findById(decoded.id); // Use 'id' not 'userId'
     
     if (!user) {
       return res.status(401).json({ error: 'Invalid token.' });
@@ -19,6 +20,7 @@ const auth = async (req, res, next) => {
     req.user = user;
     next();
   } catch (error) {
+    console.error('Auth middleware error:', error.message);
     res.status(401).json({ error: 'Invalid token.' });
   }
 };
@@ -27,13 +29,20 @@ const checkSubscription = async (req, res, next) => {
   try {
     const user = req.user;
     
+    console.log('Checking subscription for user:', user.email);
+    console.log('User subscription:', user.subscription);
+    console.log('Can use trial:', user.canUseTrial());
+    console.log('Is subscription active:', user.isSubscriptionActive);
+    
     // Check if user can use trial
     if (user.canUseTrial()) {
+      console.log('User can use trial, allowing access');
       return next();
     }
     
     // Check if subscription is active
-    if (!user.isSubscriptionActive()) {
+    if (!user.isSubscriptionActive) {
+      console.log('Subscription not active, denying access');
       return res.status(403).json({ 
         error: 'Subscription required',
         message: 'Bạn cần đăng ký gói subscription để sử dụng tính năng này.',
@@ -41,9 +50,11 @@ const checkSubscription = async (req, res, next) => {
       });
     }
     
+    console.log('Subscription active, allowing access');
     next();
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    console.error('Error in checkSubscription middleware:', error);
+    res.status(500).json({ error: 'Server error', details: error.message });
   }
 };
 

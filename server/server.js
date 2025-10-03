@@ -81,6 +81,7 @@ const paymentRoutes = require('./routes/payment');
 const locationRoutes = require('./routes/location');
 const blogRoutes = require('./routes/blog');
 const uploadRoutes = require('./routes/upload');
+const promoRoutes = require('./routes/promo');
 
 // Initialize services
 const travelAgent = new TravelAgent();
@@ -95,14 +96,21 @@ app.use('/api/payment', paymentRoutes);
 app.use('/api/location', locationRoutes);
 app.use('/api/blog', blogRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/promo', promoRoutes);
 
 // Protected travel routes
 app.post('/api/travel/search', searchLimiter, auth, checkSubscription, async (req, res) => {
   try {
+    console.log('🔍 Travel search request received');
+    console.log('User:', req.user?.email);
+    console.log('Query:', req.body.query);
+    console.log('Metadata:', req.body.metadata);
+    
     const { query, metadata = {} } = req.body;
     const user = req.user;
     
     if (!query || !query.trim()) {
+      console.log('❌ Query is empty');
       return res.status(400).json({ error: 'Query is required' });
     }
 
@@ -137,12 +145,18 @@ app.post('/api/travel/search', searchLimiter, auth, checkSubscription, async (re
       usage: {
         searchCount: user.usage.searchCount,
         trialUsed: user.usage.trialUsed,
-        subscriptionActive: user.isSubscriptionActive()
+        subscriptionActive: user.isSubscriptionActive
       }
     });
   } catch (error) {
-    console.error('Error processing travel query:', error);
-    res.status(500).json({ error: 'Internal server error' });
+    console.error('❌ Error processing travel query:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error message:', error.message);
+    res.status(500).json({ 
+      error: 'Internal server error',
+      message: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 

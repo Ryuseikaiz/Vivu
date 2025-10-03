@@ -11,13 +11,13 @@ class PaymentService {
     this.subscriptionPlans = {
       monthly: {
         name: 'Gói tháng',
-        price: 99000, // 99,000 VND
+        price: 25000, // 99,000 VND
         duration: 1, // months
         description: 'Truy cập không giới hạn trong 1 tháng'
       },
       yearly: {
         name: 'Gói năm',
-        price: 990000, // 990,000 VND (save 2 months)
+        price: 250000, // 990,000 VND (save 2 months)
         duration: 12, // months
         description: 'Truy cập không giới hạn trong 1 năm (tiết kiệm 2 tháng)'
       }

@@ -4,8 +4,30 @@ const Joi = require('joi');
 const passport = require('passport');
 const User = require('../models/User');
 const { auth } = require('../middleware/auth');
+const authController = require('../controllers/authController');
 
 const router = express.Router();
+
+// Google OAuth
+router.post('/google', authController.googleLogin);
+
+// Regular auth
+router.post('/register', authController.register);
+router.post('/login', authController.login);
+router.post('/logout', authController.logout);
+
+// Protected route example
+router.get('/me', auth, async (req, res) => {
+  try {
+    const User = require('../models/User');
+    const user = await User.findById(req.user.id).select('-password');
+    res.json({ user });
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+module.exports = router;
 
 // Validation schemas
 const registerSchema = Joi.object({

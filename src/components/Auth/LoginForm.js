@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../contexts/AuthContext';
+import SocialLogin from './SocialLogin';
 import './AuthForm.css';
 
 const LoginForm = ({ onSwitchToRegister }) => {
@@ -79,6 +80,8 @@ const LoginForm = ({ onSwitchToRegister }) => {
           {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
         </button>
       </form>
+
+      <SocialLogin />
 
       <p className="auth-switch">
         Chưa có tài khoản?{' '}

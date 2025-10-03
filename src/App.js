@@ -101,7 +101,7 @@ const AiPage = ({
         <Sidebar />
         <div className="content">
           <div className="center-container">
-            <div className="main-title">✈️🌍 AI Travel Agent 🏨🗺️</div>
+            <div className="main-title">✈️ AI Travel Agent </div>
             <TravelForm
               setTravelInfo={setTravelInfo}
               setLoading={setLoading}

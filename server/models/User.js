@@ -49,7 +49,7 @@ const userSchema = new mongoose.Schema(
     subscription: {
       type: {
         type: String,
-        enum: ["trial", "monthly", "yearly", "expired"],
+        enum: ["trial", "monthly", "yearly", "lifetime", "quarterly", "expired"],
         default: "trial",
       },
       startDate: {
@@ -99,7 +99,8 @@ const userSchema = new mongoose.Schema(
 
 // Hash password before saving
 userSchema.pre("save", async function (next) {
-  if (!this.isModified("password")) return next();
+  // Skip hashing if password is not modified or is null/undefined (for OAuth users)
+  if (!this.isModified("password") || !this.password) return next();
 
   try {
     const salt = await bcrypt.genSalt(10);
@@ -115,8 +116,13 @@ userSchema.methods.comparePassword = async function (candidatePassword) {
   return bcrypt.compare(candidatePassword, this.password);
 };
 
-// Check if subscription is active
-userSchema.methods.isSubscriptionActive = function () {
+// Check if user can use trial
+userSchema.methods.canUseTrial = function () {
+  return this.subscription.type === "trial" && !this.usage.trialUsed;
+};
+
+// Virtual property for subscription active status
+userSchema.virtual('isSubscriptionActive').get(function() {
   if (this.subscription.type === "trial" && !this.usage.trialUsed) {
     return true;
   }
@@ -126,12 +132,11 @@ userSchema.methods.isSubscriptionActive = function () {
   }
 
   return this.subscription.isActive && new Date() < this.subscription.endDate;
-};
+});
 
-// Check if user can use trial
-userSchema.methods.canUseTrial = function () {
-  return this.subscription.type === "trial" && !this.usage.trialUsed;
-};
+// Ensure virtuals are included when converting to JSON
+userSchema.set('toJSON', { virtuals: true });
+userSchema.set('toObject', { virtuals: true });
 
 // Use trial
 userSchema.methods.useTrial = function () {

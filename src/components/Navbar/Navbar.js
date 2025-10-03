@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { NavLink, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../contexts/AuthContext';
 import './Navbar.css';
@@ -14,6 +14,24 @@ const Navbar = () => {
   const navigate = useNavigate();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const [isUserMenuOpen, setIsUserMenuOpen] = useState(false);
+  const userMenuRef = useRef(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (userMenuRef.current && !userMenuRef.current.contains(event.target)) {
+        setIsUserMenuOpen(false);
+      }
+    };
+
+    if (isUserMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isUserMenuOpen]);
 
   const navItems = [
     { key: 'blog', label: 'Trang chủ', to: '/', requireAuth: false, end: true },
@@ -87,11 +105,15 @@ const Navbar = () => {
 
         <div className="navbar-actions">
           {isAuthenticated ? (
-            <div className={`user-menu ${isUserMenuOpen ? 'open' : ''}`}>
+            <div ref={userMenuRef} className={`user-menu ${isUserMenuOpen ? 'open' : ''}`}>
               <button
                 type="button"
                 className="user-trigger"
-                onClick={() => setIsUserMenuOpen((prev) => !prev)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  setIsUserMenuOpen((prev) => !prev);
+                }}
               >
                 <span className="user-avatar">{initials}</span>
                 <span className="user-details">
@@ -106,14 +128,22 @@ const Navbar = () => {
                 <button
                   type="button"
                   className="dropdown-item"
-                  onClick={() => handleNavigate('/subscription')}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleNavigate('/subscription');
+                  }}
                 >
                   Quản lý gói dịch vụ
                 </button>
                 <button
                   type="button"
                   className="dropdown-item logout"
-                  onClick={handleLogout}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleLogout();
+                  }}
                 >
                   Đăng xuất
                 </button>

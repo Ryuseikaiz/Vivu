@@ -1,28 +1,114 @@
-import React from 'react';
+import React, { useEffect, useCallback } from 'react';
+import { useAuth } from '../../contexts/AuthContext';
 import './SocialLogin.css';
 
 const SocialLogin = ({ mode = 'login' }) => {
-  const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000';
+  const { loginWithGoogle } = useAuth();
+
+  const handleGoogleResponse = useCallback(async (response) => {
+    console.log('Google response received:', response);
+    try {
+      if (response.credential) {
+        console.log('Calling loginWithGoogle with token...');
+        const result = await loginWithGoogle(response.credential);
+        
+        if (result.success) {
+          console.log('Login successful!');
+          // Wait for React state to update fully before redirect
+          setTimeout(() => {
+            console.log('Redirecting to home page...');
+            window.location.href = '/';
+          }, 1000);
+        } else {
+          console.error('Login failed:', result.error);
+          alert('Đăng nhập thất bại: ' + result.error);
+        }
+      } else {
+        console.error('No credential in response');
+        alert('Không nhận được thông tin đăng nhập từ Google');
+      }
+    } catch (error) {
+      console.error('Google login error:', error);
+      alert('Đăng nhập Google thất bại: ' + error.message);
+    }
+  }, [loginWithGoogle]);
+
+  useEffect(() => {
+    // Load Google Sign-In script
+    const script = document.createElement('script');
+    script.src = 'https://accounts.google.com/gsi/client';
+    script.async = true;
+    script.defer = true;
+    
+    script.onload = () => {
+      console.log('Google Sign-In script loaded');
+      if (window.google) {
+        const clientId = process.env.REACT_APP_GOOGLE_CLIENT_ID || '1019363317955-5e9ho3m5a66kdghhr7u5g55okd0dne2k.apps.googleusercontent.com';
+        console.log('Initializing Google Sign-In with client ID:', clientId);
+        
+        // Define callback globally to ensure it's accessible
+        window.handleGoogleCallback = handleGoogleResponse;
+        
+        window.google.accounts.id.initialize({
+          client_id: clientId,
+          callback: window.handleGoogleCallback,
+          auto_select: false,
+          cancel_on_tap_outside: true,
+        });
+        
+        console.log('Google Sign-In initialized successfully');
+      } else {
+        console.error('Google Sign-In library not loaded');
+      }
+    };
+
+    script.onerror = () => {
+      console.error('Failed to load Google Sign-In script');
+    };
+
+    document.body.appendChild(script);
+
+    return () => {
+      if (document.body.contains(script)) {
+        document.body.removeChild(script);
+      }
+    };
+  }, [handleGoogleResponse]);
 
   const handleGoogleLogin = () => {
-    window.location.href = `${API_URL}/api/auth/google`;
-  };
-
-  const handleFacebookLogin = () => {
-    window.location.href = `${API_URL}/api/auth/facebook`;
+    console.log('Google login button clicked');
+    if (window.google) {
+      console.log('Prompting Google Sign-In...');
+      window.google.accounts.id.prompt((notification) => {
+        console.log('Prompt notification:', notification);
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          console.log('Prompt was not displayed or skipped, showing One Tap UI');
+          // Fallback: render the button
+          window.google.accounts.id.renderButton(
+            document.getElementById('google-signin-button'),
+            { 
+              theme: 'outline', 
+              size: 'large',
+              text: 'signin_with',
+              width: 300
+            }
+          );
+        }
+      });
+    } else {
+      console.error('Google Sign-In not initialized yet');
+      alert('Google Sign-In chưa sẵn sàng. Vui lòng thử lại sau.');
+    }
   };
 
   return (
     <div className="social-login">
-      <div className="social-divider">
-        <span>hoặc {mode === 'login' ? 'đăng nhập' : 'đăng ký'} với</span>
-      </div>
-
       <div className="social-buttons">
         <button
           type="button"
           onClick={handleGoogleLogin}
           className="social-btn google-btn"
+          id="google-signin-button"
         >
           <svg className="social-icon" viewBox="0 0 24 24">
             <path
@@ -42,21 +128,7 @@ const SocialLogin = ({ mode = 'login' }) => {
               d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
             />
           </svg>
-          <span>Google</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={handleFacebookLogin}
-          className="social-btn facebook-btn"
-        >
-          <svg className="social-icon" viewBox="0 0 24 24">
-            <path
-              fill="#1877F2"
-              d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
-            />
-          </svg>
-          <span>Facebook</span>
+          <span>Đăng nhập với Google</span>
         </button>
       </div>
     </div>

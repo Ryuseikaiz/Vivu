@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
+import PromoCodeInput from './PromoCodeInput';
 import './SubscriptionPlans.css';
 
 const SubscriptionPlans = () => {
@@ -82,6 +83,9 @@ const SubscriptionPlans = () => {
           </div>
         </div>
       )}
+
+      {/* Promo Code Section */}
+      <PromoCodeInput onSuccess={refreshUser} />
 
       <div className="plans-grid">
         {Object.entries(plans).map(([planType, plan]) => (

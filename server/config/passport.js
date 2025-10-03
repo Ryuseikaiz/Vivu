@@ -18,7 +18,9 @@ passport.deserializeUser(async (id, done) => {
   }
 });
 
-// Google OAuth Strategy
+// Google OAuth Strategy - DISABLED (using google-auth-library in auth controller instead)
+// Uncomment and add GOOGLE_CLIENT_SECRET to .env if you want to use Passport Google OAuth
+/*
 if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
   passport.use(
     new GoogleStrategy(
@@ -73,6 +75,8 @@ if (process.env.GOOGLE_CLIENT_ID && process.env.GOOGLE_CLIENT_SECRET) {
 } else {
   console.log('⚠️  Google OAuth not configured');
 }
+*/
+console.log('ℹ️  Using google-auth-library for Google Sign-In (no client secret needed)');
 
 // Facebook OAuth Strategy
 if (process.env.FACEBOOK_APP_ID && process.env.FACEBOOK_APP_SECRET) {
