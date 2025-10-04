@@ -64,11 +64,11 @@ const LocationMap = ({ onLocationSelect }) => {
     return 'https://www.google.com/maps';
   }, []);
 
-  const fetchNearbyPlaces = useCallback(async (location, category) => {
+  const fetchNearbyPlaces = useCallback(async (location, category, retryCount = 0) => {
     if (!location) return;
 
     setLoading(true);
-  setError(null);
+    setError(null);
 
     try {
       const response = await axios.post('/api/location/nearby', {
@@ -79,9 +79,44 @@ const LocationMap = ({ onLocationSelect }) => {
       setNearbyPlaces(response.data.places || []);
     } catch (fetchError) {
       console.error('Error fetching nearby places:', fetchError);
-      setError({ type: 'data', message: 'Không thể tải danh sách địa điểm. Vui lòng thử lại sau.' });
+      
+      // Handle specific error cases
+      if (fetchError.response?.status === 429) {
+        if (retryCount < 2) {
+          const delay = Math.pow(2, retryCount) * 1000; // Exponential backoff: 1s, 2s
+          console.log(`Rate limited. Retrying in ${delay}ms...`);
+          setError({ type: 'data', message: `Quá nhiều yêu cầu. Đang thử lại sau ${delay/1000}s...` });
+          
+          setTimeout(() => {
+            fetchNearbyPlaces(location, category, retryCount + 1);
+          }, delay);
+          return;
+        } else {
+          setError({ 
+            type: 'data', 
+            message: 'Máy chủ đang quá tải. Vui lòng thử lại sau vài phút.' 
+          });
+        }
+      } else if (fetchError.response?.status >= 500) {
+        setError({ 
+          type: 'data', 
+          message: 'Lỗi máy chủ. Vui lòng thử lại sau.' 
+        });
+      } else if (fetchError.code === 'NETWORK_ERROR' || !fetchError.response) {
+        setError({ 
+          type: 'data', 
+          message: 'Không có kết nối mạng. Vui lòng kiểm tra internet.' 
+        });
+      } else {
+        setError({ 
+          type: 'data', 
+          message: 'Không thể tải danh sách địa điểm. Vui lòng thử lại sau.' 
+        });
+      }
     } finally {
-      setLoading(false);
+      if (retryCount === 0) { // Only set loading false on initial request
+        setLoading(false);
+      }
     }
   }, []);
 
@@ -311,13 +346,6 @@ const LocationMap = ({ onLocationSelect }) => {
                         <p>{place.vicinity}</p>
                         <button
                           type="button"
-                          className="popup-button"
-                          onClick={() => onLocationSelect && onLocationSelect(place)}
-                        >
-                          Sử dụng địa điểm này
-                        </button>
-                        <button
-                          type="button"
                           className="popup-link"
                           onClick={() => handleOpenInMaps(place)}
                         >
@@ -406,13 +434,6 @@ const LocationMap = ({ onLocationSelect }) => {
 
                   <div className="place-actions">
                     <span className="open-maps">Mở Google Maps ↗</span>
-                    <button
-                      type="button"
-                      className="select-place-btn"
-                      onClick={(event) => handleSelectPlace(event, place)}
-                    >
-                      Chọn địa điểm này
-                    </button>
                   </div>
                 </div>
               );

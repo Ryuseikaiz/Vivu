@@ -16,13 +16,44 @@ export const AuthProvider = ({ children }) => {
   const [loading, setLoading] = useState(true);
   const [token, setToken] = useState(localStorage.getItem('token'));
 
-  // Set up axios interceptor for auth token
+  // Logout function
+  const logout = () => {
+    console.log('🚪 Logging out user');
+    setToken(null);
+    setUser(null);
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    delete axios.defaults.headers.common['Authorization'];
+  };
+
+  // Set up axios interceptor for auth token and handle expired tokens
   useEffect(() => {
     if (token) {
       axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
     } else {
       delete axios.defaults.headers.common['Authorization'];
     }
+
+    // Response interceptor to handle token expiration
+    const responseInterceptor = axios.interceptors.response.use(
+      (response) => response,
+      (error) => {
+        if (error.response?.status === 401 && 
+            (error.response?.data?.code === 'TOKEN_EXPIRED' || 
+             error.response?.data?.code === 'INVALID_TOKEN')) {
+          console.log('🔒 Token expired, auto logout');
+          logout();
+          // Optionally show a notification
+          alert('Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.');
+        }
+        return Promise.reject(error);
+      }
+    );
+
+    // Cleanup interceptor on unmount
+    return () => {
+      axios.interceptors.response.eject(responseInterceptor);
+    };
   }, [token]);
 
   // Load user on app start
@@ -125,13 +156,6 @@ export const AuthProvider = ({ children }) => {
       const message = error.response?.data?.message || 'Đăng nhập Google thất bại';
       return { success: false, error: message };
     }
-  };
-
-  const logout = () => {
-    setToken(null);
-    setUser(null);
-    localStorage.removeItem('token');
-    delete axios.defaults.headers.common['Authorization'];
   };
 
   const refreshUser = async () => {

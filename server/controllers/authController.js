@@ -11,12 +11,12 @@ const generateTokens = (user) => {
   const accessToken = jwt.sign(
     { id: user._id, role: user.role },
     process.env.JWT_SECRET || process.env.JWT_ACCESS_SECRET,
-    { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || '15m' }
+    { expiresIn: process.env.ACCESS_TOKEN_EXPIRES_IN || '7d' }
   );
   const refreshToken = jwt.sign(
     { id: user._id, role: user.role },
     process.env.JWT_REFRESH_SECRET || process.env.JWT_SECRET,
-    { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '7d' }
+    { expiresIn: process.env.REFRESH_TOKEN_EXPIRES_IN || '30d' }
   );
   return { accessToken, refreshToken };
 };

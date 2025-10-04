@@ -34,10 +34,10 @@ const Navbar = () => {
   }, [isUserMenuOpen]);
 
   const navItems = [
-    { key: 'blog', label: 'Trang chủ', to: '/', requireAuth: false, end: true },
+    { key: 'home', label: 'Trang chủ', to: '/', requireAuth: false, end: true },
     { key: 'ai', label: 'AI Du lịch', to: '/ai', requireAuth: true },
     { key: 'location', label: 'Khám phá', to: '/location', requireAuth: true },
-    { key: 'create-blog', label: 'Viết blog', to: '/blog/create', requireAuth: true }
+    { key: 'forum', label: 'Forum', to: '/forum', requireAuth: true }
   ];
 
   const handleNavigate = (path) => {

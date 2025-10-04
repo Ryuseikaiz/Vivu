@@ -6,7 +6,10 @@ const auth = async (req, res, next) => {
     const token = req.header('Authorization')?.replace('Bearer ', '');
     
     if (!token) {
-      return res.status(401).json({ error: 'Access denied. No token provided.' });
+      return res.status(401).json({ 
+        error: 'Access denied. No token provided.',
+        code: 'NO_TOKEN' 
+      });
     }
 
     // Use JWT_ACCESS_SECRET to match the token generation
@@ -14,14 +17,35 @@ const auth = async (req, res, next) => {
     const user = await User.findById(decoded.id); // Use 'id' not 'userId'
     
     if (!user) {
-      return res.status(401).json({ error: 'Invalid token.' });
+      return res.status(401).json({ 
+        error: 'Invalid token.',
+        code: 'INVALID_TOKEN' 
+      });
     }
 
     req.user = user;
     next();
   } catch (error) {
     console.error('Auth middleware error:', error.message);
-    res.status(401).json({ error: 'Invalid token.' });
+    
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ 
+        error: 'Token expired. Please login again.',
+        code: 'TOKEN_EXPIRED' 
+      });
+    }
+    
+    if (error.name === 'JsonWebTokenError') {
+      return res.status(401).json({ 
+        error: 'Invalid token format.',
+        code: 'INVALID_TOKEN' 
+      });
+    }
+    
+    res.status(401).json({ 
+      error: 'Authentication failed.',
+      code: 'AUTH_FAILED' 
+    });
   }
 };
 

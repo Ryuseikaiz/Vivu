@@ -26,6 +26,7 @@ const locationRoutes = require('../server/routes/location');
 const paymentRoutes = require('../server/routes/payment');
 const promoRoutes = require('../server/routes/promo');
 const uploadRoutes = require('../server/routes/upload');
+const facebookRoutes = require('../server/routes/facebook');
 
 // Import middleware
 const { auth, checkSubscription } = require('../server/middleware/auth');
@@ -49,6 +50,7 @@ app.use('/api/location', locationRoutes);
 app.use('/api/payment', paymentRoutes);
 app.use('/api/promo', promoRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/facebook', facebookRoutes);
 
 // Travel search route (copied from server.js)
 const { v4: uuidv4 } = require('uuid');
